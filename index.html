@@ -775,35 +775,54 @@
       --channel-card-bg: #0f0f1a;
     }
     .light-theme {
-      --bg-primary: #f0f2f5;
+      --bg-primary: #f5f7fb;
       --bg-card: #ffffff;
-      --bg-input: #f5f5f5;
-      --bg-header: rgba(255,255,255,0.9);
-      --text-primary: #1a1a2e;
-      --text-muted: #6b7280;
-      --border-color: #d1d5db;
-      --border-glow: #00f3ff22;
+      --bg-input: #f8fafc;
+      --bg-header: rgba(255,255,255,0.97);
+      --text-primary: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --border-glow: rgba(14,165,233,0.15);
       --sidebar-bg: #ffffff;
       --sheet-bg: #ffffff;
       --player-bg: #000;
       --channel-card-bg: #ffffff;
     }
-    .light-theme body { background: #f0f2f5; color: #1a1a2e; }
+    .light-theme body { background: #f5f7fb; color: #1e293b; }
     .light-theme .admin-card,
-    .light-theme .stat-card { background: #fff; border-color: #d1d5db; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    .light-theme .sidebar { background: #fff; border-color: #d1d5db; }
-    .light-theme .sidebar-item { color: #4b5563; }
-    .light-theme .sidebar-item:hover { background: #f3f4f6; color: #1a1a2e; }
-    .light-theme .sidebar-item.active { background: #eff6ff; color: #0099cc; border-left-color: #0099cc; }
-    .light-theme .admin-input, .light-theme .admin-select { background: #f5f5f5; border-color: #d1d5db; color: #1a1a2e; }
-    .light-theme .admin-input:focus, .light-theme .admin-select:focus { border-color: #0099cc; }
-    .light-theme .ad-item, .light-theme .match-item, .light-theme .script-item { background: #fff; border-color: #d1d5db; }
-    .light-theme .modal-box { background: #fff; border-color: #d1d5db; }
-    .light-theme .login-card { background: #fff; border-color: #d1d5db; }
-    .light-theme .login-bg { background: radial-gradient(ellipse at center, #e0e7ff 0%, #f0f2f5 70%); }
-    .light-theme header { background: rgba(255,255,255,0.9); border-color: #d1d5db; }
-    .light-theme ::-webkit-scrollbar-track { background: #f0f0f0; }
-    .light-theme ::-webkit-scrollbar-thumb { background: #ccc; }
+    .light-theme .stat-card { background: #fff; border-color: #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .light-theme .sidebar { background: #fff; border-color: #e2e8f0; box-shadow: 2px 0 12px rgba(0,0,0,0.05); }
+    .light-theme .sidebar-item { color: #475569; }
+    .light-theme .sidebar-item:hover { background: #f0f9ff; color: #1e293b; }
+    .light-theme .sidebar-item.active { background: #f0f9ff; color: #0284c7; border-left-color: #0ea5e9; }
+    .light-theme .admin-input, .light-theme .admin-select { background: #f8fafc; border-color: #e2e8f0; color: #1e293b; }
+    .light-theme .admin-input:focus, .light-theme .admin-select:focus { border-color: #0ea5e9; box-shadow: 0 0 0 3px rgba(14,165,233,0.15); }
+    .light-theme .ad-item, .light-theme .match-item, .light-theme .script-item { background: #fff; border-color: #e2e8f0; }
+    .light-theme .modal-box { background: #fff; border-color: #e2e8f0; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+    .light-theme .login-card { background: #fff; border-color: #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+    .light-theme .login-bg { background: radial-gradient(ellipse at center, #e0f2fe 0%, #f5f7fb 70%); }
+    .light-theme header { background: rgba(255,255,255,0.97); border-color: #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .light-theme ::-webkit-scrollbar-track { background: #f1f5f9; }
+    .light-theme ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .light-theme ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .light-theme .btn-neon { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+    .light-theme .btn-pink { background: linear-gradient(135deg, #e11d48, #be123c); }
+    .light-theme .btn-green { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; }
+    .light-theme .btn-ghost { border-color: #e2e8f0; color: #64748b; }
+    .light-theme .btn-ghost:hover { border-color: #0ea5e9; color: #0ea5e9; }
+    .light-theme .toggle-switch { background: #cbd5e1; border-color: #e2e8f0; }
+    .light-theme .toggle-switch.active { background: rgba(14,165,233,0.15); border-color: #0ea5e9; }
+    .light-theme .toggle-switch.active::after { background: #0ea5e9; box-shadow: 0 0 8px rgba(14,165,233,0.4); }
+    .light-theme .toggle-switch.pink.active { background: rgba(225,29,72,0.1); border-color: #e11d48; }
+    .light-theme .toggle-switch.pink.active::after { background: #e11d48; box-shadow: 0 0 8px rgba(225,29,72,0.4); }
+    .light-theme .toggle-switch.green.active { background: rgba(34,197,94,0.1); border-color: #22c55e; }
+    .light-theme .toggle-switch.green.active::after { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.4); }
+    .light-theme .badge-on { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3); color: #16a34a; }
+    .light-theme .badge-off { background: rgba(225,29,72,0.1); border-color: rgba(225,29,72,0.3); color: #e11d48; }
+    .light-theme .admin-textarea-code { background: #f8fafc; border-color: #e2e8f0; color: #16a34a; }
+    .light-theme .tv-menu-btn { color: #475569; }
+    .light-theme .tv-menu-btn:hover { color: #0ea5e9; }
+    .light-theme .logo-shimmer { background: linear-gradient(90deg, #0ea5e9, #e11d48, #0ea5e9); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: shimmer 3s linear infinite; }
 
     /* ===== TV Streaming Interface Styles ===== */
     #tvApp {
@@ -917,7 +936,7 @@
     }
     .channel-card {
       background: var(--channel-card-bg);
-      border: 1px solid var(--border-color);
+      border: 2px solid var(--border-color);
       border-radius: 10px; padding: 12px; text-align: center;
       cursor: pointer; transition: all 0.25s; position: relative;
       overflow: hidden;
@@ -933,6 +952,10 @@
       background: #0a0a0f; display: flex; align-items: center; justify-content: center;
     }
     .light-theme .channel-card-logo { background: #f0f0f0; }
+    .light-theme .channel-card.is-playing {
+      border-color: #0ea5e9 !important;
+      box-shadow: 0 0 12px rgba(14,165,233,0.3), 0 0 24px rgba(14,165,233,0.1) !important;
+    }
     .channel-card-logo img { width: 100%; height: 100%; object-fit: contain; }
     .channel-card-name {
       font-size: 12px; font-weight: 600; color: var(--text-primary);
@@ -942,9 +965,9 @@
       font-size: 10px; color: var(--text-muted); margin-top: 2px;
     }
 
-    /* Feature 5: Currently Playing Channel Marking */
+    /* Feature 5: Currently Playing Channel Marking - Border Style */
     .channel-card.is-playing {
-      border-color: #00f3ff;
+      border: 2px solid #00f3ff;
       box-shadow: 0 0 12px #00f3ff44, 0 0 24px #00f3ff22, inset 0 0 8px #00f3ff08;
     }
     .live-badge {
@@ -1117,11 +1140,9 @@
         </div>
         <div class="center-controls">
           <button class="ctrl-btn" id="prevBtn" onclick="playPrevChannel()" title="Previous"><i class="fas fa-step-backward"></i></button>
-          <button class="ctrl-btn" id="playPauseBtn" onclick="togglePlayPause()" title="Play/Pause"><i class="fas fa-play"></i></button>
           <button class="ctrl-btn" id="nextBtn" onclick="playNextChannel()" title="Next"><i class="fas fa-step-forward"></i></button>
         </div>
         <div class="right-controls">
-          <button class="ctrl-btn bf-toggle" id="bfToggleBtn" onclick="toggleBFMode()" title="Buffering-Free Mode">BF</button>
           <button class="ctrl-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Fullscreen"><i class="fas fa-expand"></i></button>
         </div>
       </div>
@@ -4386,6 +4407,106 @@
         });
       } catch (e) {
         return dateStr;
+      }
+    }
+
+    // ===== TV APP SIDEBAR FUNCTIONS =====
+    function toggleTvSidebar() {
+      const sidebar = document.getElementById('tvSettingsSidebar');
+      const overlay = document.getElementById('tvSidebarOverlay');
+      if (sidebar.classList.contains('open')) {
+        closeTvSidebar();
+      } else {
+        sidebar.classList.add('open');
+        overlay.classList.add('show');
+      }
+    }
+    function closeTvSidebar() {
+      const sidebar = document.getElementById('tvSettingsSidebar');
+      const overlay = document.getElementById('tvSidebarOverlay');
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+    }
+
+    // ===== TV MODE TOGGLE =====
+    let tvModeActive = false;
+    function toggleTvMode() {
+      tvModeActive = !tvModeActive;
+      const toggle = document.getElementById('tvModeToggle');
+      const tvApp = document.getElementById('tvApp');
+      if (tvModeActive) {
+        toggle.classList.add('active');
+        document.body.classList.add('tv-mode-active');
+        // Auto-close sidebar when entering TV mode
+        closeTvSidebar();
+      } else {
+        toggle.classList.remove('active');
+        document.body.classList.remove('tv-mode-active');
+      }
+      localStorage.setItem('ai_tv_pro_tv_mode', tvModeActive ? 'on' : 'off');
+    }
+
+    // ===== THEME TOGGLE =====
+    let currentTheme = localStorage.getItem('ai_tv_pro_theme') || 'dark';
+    function toggleTheme() {
+      const toggle = document.getElementById('themeToggle');
+      if (currentTheme === 'dark') {
+        currentTheme = 'light';
+        document.body.classList.add('light-theme');
+        toggle.classList.add('active');
+      } else {
+        currentTheme = 'dark';
+        document.body.classList.remove('light-theme');
+        toggle.classList.remove('active');
+      }
+      localStorage.setItem('ai_tv_pro_theme', currentTheme);
+    }
+    // Apply saved theme on load
+    if (currentTheme === 'light') {
+      document.body.classList.add('light-theme');
+      const toggle = document.getElementById('themeToggle');
+      if (toggle) toggle.classList.add('active');
+    }
+    // Apply saved TV mode on load
+    if (localStorage.getItem('ai_tv_pro_tv_mode') === 'on') {
+      tvModeActive = true;
+      const toggle = document.getElementById('tvModeToggle');
+      if (toggle) toggle.classList.add('active');
+      document.body.classList.add('tv-mode-active');
+    }
+
+    // ===== BF MODE TOGGLE =====
+    let bfModeEnabled = false;
+    function toggleBFMode() {
+      bfModeEnabled = !bfModeEnabled;
+      const toggle = document.getElementById('bfModeSidebarToggle');
+      const indicator = document.getElementById('bfIndicator');
+      if (bfModeEnabled) {
+        toggle.classList.add('active');
+        if (indicator) indicator.classList.add('show');
+      } else {
+        toggle.classList.remove('active');
+        if (indicator) indicator.classList.remove('show');
+      }
+      localStorage.setItem('ai_tv_pro_bf_mode', bfModeEnabled ? 'on' : 'off');
+    }
+    // Apply saved BF mode on load
+    if (localStorage.getItem('ai_tv_pro_bf_mode') === 'on') {
+      bfModeEnabled = true;
+      const toggle = document.getElementById('bfModeSidebarToggle');
+      if (toggle) toggle.classList.add('active');
+      const indicator = document.getElementById('bfIndicator');
+      if (indicator) indicator.classList.add('show');
+    }
+
+    // ===== PLAY/PAUSE =====
+    function togglePlayPause() {
+      const video = document.getElementById('tvVideo');
+      if (!video) return;
+      if (video.paused) {
+        video.play().catch(e => console.log('Play blocked', e));
+      } else {
+        video.pause();
       }
     }
   </script>
