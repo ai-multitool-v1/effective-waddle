@@ -823,6 +823,19 @@
     .light-theme .tv-menu-btn { color: #475569; }
     .light-theme .tv-menu-btn:hover { color: #0ea5e9; }
     .light-theme .logo-shimmer { background: linear-gradient(90deg, #0ea5e9, #e11d48, #0ea5e9); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: shimmer 3s linear infinite; }
+    /* ===== WHITE THEME BORDER FIXES for TV App ===== */
+    .light-theme .tv-settings-sidebar { border-left-color: #e2e8f0 !important; background: #ffffff !important; }
+    .light-theme .tv-sidebar-header { border-bottom-color: #e2e8f0 !important; background: linear-gradient(135deg, #f0f9ff, #e0f2fe) !important; }
+    .light-theme .tv-sidebar-section { border-bottom-color: #e2e8f0 !important; }
+    .light-theme .tv-sidebar-close { color: #64748b !important; }
+    .light-theme .tv-sidebar-close:hover { color: #e11d48 !important; }
+    .light-theme .tv-sidebar-overlay { background: rgba(0,0,0,0.4) !important; }
+    .light-theme .player-controls { background: linear-gradient(transparent, rgba(255,255,255,0.9)) !important; }
+    .light-theme .ctrl-btn { color: #475569 !important; }
+    .light-theme .ctrl-btn:hover { color: #0ea5e9 !important; background: rgba(14,165,233,0.1) !important; }
+    .light-theme .cat-tab { border-color: #e2e8f0 !important; color: #64748b !important; }
+    .light-theme .cat-tab.active { background: rgba(14,165,233,0.1) !important; border-color: #0ea5e9 !important; color: #0284c7 !important; }
+    .light-theme .bf-indicator { background: rgba(255,255,255,0.9); color: #16a34a; border-color: rgba(22,163,74,0.3); }
 
     /* ===== TV Streaming Interface Styles ===== */
     #tvApp {
@@ -910,8 +923,10 @@
       background: rgba(0,255,136,0.15); border: 1px solid #00ff8844;
       color: #00ff88; font-family: 'Orbitron', sans-serif; font-size: 10px;
       padding: 3px 8px; border-radius: 4px; z-index: 6; display: none;
+      transition: opacity 0.5s ease;
     }
     .bf-indicator.show { display: block; }
+    .bf-indicator.bf-toast { opacity: 0; }
 
     /* Channel Grid */
     .channel-grid-container {
@@ -4417,8 +4432,7 @@
       if (sidebar.classList.contains('open')) {
         closeTvSidebar();
       } else {
-        sidebar.classList.add('open');
-        overlay.classList.add('show');
+        openTvSidebar();
       }
     }
     function closeTvSidebar() {
@@ -4426,6 +4440,18 @@
       const overlay = document.getElementById('tvSidebarOverlay');
       sidebar.classList.remove('open');
       overlay.classList.remove('show');
+      // Force close: ensure sidebar is fully hidden
+      if (sidebar) sidebar.style.transform = 'translateX(100%)';
+      if (overlay) { overlay.style.display = 'none'; }
+    }
+    function openTvSidebar() {
+      const sidebar = document.getElementById('tvSettingsSidebar');
+      const overlay = document.getElementById('tvSidebarOverlay');
+      sidebar.classList.add('open');
+      overlay.classList.add('show');
+      // Reset inline styles from force-close
+      if (sidebar) sidebar.style.transform = '';
+      if (overlay) overlay.style.display = '';
     }
 
     // ===== TV MODE TOGGLE =====
@@ -4483,20 +4509,31 @@
       const indicator = document.getElementById('bfIndicator');
       if (bfModeEnabled) {
         toggle.classList.add('active');
-        if (indicator) indicator.classList.add('show');
+        if (indicator) {
+          indicator.classList.add('show');
+          // Toast: show briefly then auto-hide
+          indicator.classList.remove('bf-toast');
+          clearTimeout(indicator._bfTimer);
+          indicator._bfTimer = setTimeout(function(){ indicator.classList.add('bf-toast'); }, 2000);
+        }
       } else {
         toggle.classList.remove('active');
-        if (indicator) indicator.classList.remove('show');
+        if (indicator) { indicator.classList.remove('show'); indicator.classList.remove('bf-toast'); }
       }
       localStorage.setItem('ai_tv_pro_bf_mode', bfModeEnabled ? 'on' : 'off');
     }
-    // Apply saved BF mode on load
+    // Apply saved BF mode on load - show briefly as toast
     if (localStorage.getItem('ai_tv_pro_bf_mode') === 'on') {
       bfModeEnabled = true;
       const toggle = document.getElementById('bfModeSidebarToggle');
       if (toggle) toggle.classList.add('active');
       const indicator = document.getElementById('bfIndicator');
-      if (indicator) indicator.classList.add('show');
+      if (indicator) {
+        indicator.classList.add('show');
+        indicator.classList.remove('bf-toast');
+        clearTimeout(indicator._bfTimer);
+        indicator._bfTimer = setTimeout(function(){ indicator.classList.add('bf-toast'); }, 2500);
+      }
     }
 
     // ===== PLAY/PAUSE =====

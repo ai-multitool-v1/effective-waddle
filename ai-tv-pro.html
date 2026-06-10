@@ -851,7 +851,7 @@ input,textarea{
   background: rgba(0,243,255,0.15); border-color: #00f3ff;
   box-shadow: 0 0 12px rgba(0,243,255,0.3);
 }
-body.tv-mode .tv-mode-float-settings { display: flex; }
+body.tv-mode .tv-mode-float-settings { display: none !important; }
 
 /* Feature 5: Currently Playing Channel Marking - Border Style */
 .card-animate.is-playing {
@@ -1094,6 +1094,65 @@ body.tv-mode .tv-mode-float-settings { display: flex; }
 /* Quality menu text in light theme */
 .light-theme .settings-menu .menu-item { color: #334155 !important; }
 .light-theme #qualityMenu p, .light-theme #qualityMenu div { color: #334155 !important; }
+/* ===== WHITE THEME BORDER FIXES - Non-white borders for all UI ===== */
+/* Settings sidebar border */
+.light-theme .settings-sidebar { border-left-color: #e2e8f0 !important; }
+/* Player controls overlay border */
+.light-theme #controlsOverlay .bg-black\/60 { background: rgba(255,255,255,0.85) !important; backdrop-filter: blur(12px) !important; border-color: #e2e8f0 !important; }
+.light-theme #controlsOverlay .border-white\/10 { border-color: #e2e8f0 !important; }
+/* Player control buttons */
+.light-theme #controlsOverlay button { color: #475569 !important; }
+.light-theme #controlsOverlay button:hover { color: #0ea5e9 !important; background: rgba(14,165,233,0.1) !important; }
+/* Playing title in controls */
+.light-theme #playingTitle { color: #1e293b !important; }
+.light-theme .text-gray-400 { color: #64748b !important; }
+/* Volume slider in light theme */
+.light-theme #volumeSlider { accent-color: #0ea5e9 !important; }
+/* Quality menu in player */
+.light-theme .settings-menu { background: rgba(255,255,255,0.98) !important; border-color: #e2e8f0 !important; box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important; }
+.light-theme .menu-item { color: #334155 !important; border-color: #f1f5f9 !important; }
+.light-theme .menu-item:hover { background: #f0f9ff !important; }
+.light-theme .menu-item.active { color: #0ea5e9 !important; background: #f0f9ff !important; }
+/* Worldcup modal border */
+.light-theme .worldcup-modal { border-color: #e2e8f0 !important; }
+.light-theme .worldcup-modal .modal-header { border-bottom-color: #e2e8f0 !important; }
+/* Refresh modal border */
+.light-theme .refresh-modal { border-color: #e2e8f0 !important; }
+.light-theme .refresh-modal .modal-header { border-bottom-color: #e2e8f0 !important; }
+/* Disclaimer modal border */
+.light-theme #disclaimerModal { border-color: #e2e8f0 !important; }
+.light-theme #disclaimerModal .modal-header { border-bottom-color: #e2e8f0 !important; }
+/* Popup ad card border */
+.light-theme .popup-ad-card { border-color: #e2e8f0 !important; }
+/* Ad banner border */
+.light-theme .ad-banner { border-color: #e2e8f0 !important; }
+/* Inline ad card border */
+.light-theme .ad-inline-card { border-color: #e2e8f0 !important; }
+/* Channel card action buttons */
+.light-theme .fav-btn, .light-theme .pin-btn { background: rgba(255,255,255,0.8); border: 1px solid #e2e8f0; }
+/* Channel number badge border */
+.light-theme .ch-num-badge { border: 1px solid rgba(14,165,233,0.2); }
+/* Refresh modal buttons border */
+.light-theme #refreshModal button { border: 1px solid #e2e8f0 !important; }
+/* Bottom sheet border */
+.light-theme .bottom-sheet { border-top-color: #e2e8f0 !important; }
+/* Player wrapper border */
+.light-theme #playerWrapper { border-bottom-color: #e2e8f0 !important; }
+/* Drag handle in light theme */
+.light-theme .drag-handle { background: linear-gradient(to bottom, rgba(255,255,255,0.7), transparent) !important; }
+/* Resize handle in light theme */
+.light-theme .resize-handle { background: radial-gradient(circle at bottom right, #0ea5e9 0%, transparent 60%) !important; }
+/* Speed meter border */
+.light-theme .speed-meter { border-color: rgba(14,165,233,0.3) !important; }
+/* Channel jump overlay */
+.light-theme .ch-jump-overlay { border-color: #0ea5e9 !important; }
+/* Settings overlay in light theme */
+.light-theme .settings-overlay { background: rgba(0,0,0,0.4) !important; }
+/* Region button border fix */
+.light-theme #regionBtn { border-color: #e2e8f0 !important; background: #f8fafc !important; color: #334155 !important; }
+/* BF indicator - make it toast style, don't show permanently */
+.bf-indicator { transition: opacity 0.5s ease !important; }
+.bf-indicator.bf-toast { opacity: 0 !important; }
 </style></meta></meta></meta></head><body class="flex flex-col min-h-[100svh]"><div class="maintenance-overlay" id="maintenanceOverlay"><i class="fas fa-tools"></i><h2>Under Maintenance</h2><p>We are performing scheduled maintenance. Please check back later.</p></div><header class="bg-black/90 backdrop-blur-md border-b border-white/10 sticky top-0 z-50 h-16 flex-shrink-0"><div class="container mx-auto px-4 h-full flex items-center justify-between"><div class="flex items-center gap-3"><i class="fas fa-tv text-cyan-400 text-xl"></i><h1 class="text-sm brand-font font-bold text-white tracking-wider">AI TV <span class="text-cyan-400">PRO</span></h1></div><div class="flex items-center gap-3"><button class="sm:hidden text-gray-400 hover:text-white transition" id="mobileSearchBtn"><i class="fas fa-search text-sm"></i></button><div class="relative hidden sm:block"><input class="bg-[#111] border border-white/10 rounded-full py-1.5 pl-8 pr-4 text-xs text-white focus:border-cyan-500/50 focus:outline-none w-32 focus:w-48 transition-all" id="searchInput" placeholder="Search..." type="text"/><i class="fas fa-search absolute left-3 top-2 text-gray-500"></i></div><div class="relative"><button class="flex items-center gap-2 bg-[#111] hover:bg-[#222] border border-white/10 px-3 py-1.5 rounded text-xs font-bold text-gray-300 transition" id="regionBtn"><i class="fas fa-globe text-pink-500"></i><span id="selectedRegion">Bangladesh</span><i class="fas fa-chevron-down text-[10px]"></i></button><div class="absolute right-0 top-full mt-2 w-64 bg-[#0a0a0a] border border-white/10 rounded shadow-2xl z-50 max-h-96 overflow-y-auto smooth-dropdown" id="regionDropdown"><div class="p-2 sticky top-0 bg-[#0a0a0a] border-b border-white/5 z-10"><input class="w-full bg-[#111] border border-white/5 rounded px-2 py-1 text-xs text-white focus:outline-none" id="regionSearch" placeholder="Filter..." type="text"/></div><div class="p-1" id="countryList"></div></div></div><button class="flex flex-col items-center justify-center gap-[3px] w-8 h-8 rounded hover:bg-white/10 transition cursor-pointer" id="settingsToggleBtn" title="Settings"><span class="block w-[18px] h-[2px] bg-gray-300 rounded transition-all"></span><span class="block w-[18px] h-[2px] bg-gray-300 rounded transition-all"></span><span class="block w-[18px] h-[2px] bg-gray-300 rounded transition-all"></span></button></div></div><div class="hidden sm:hidden bg-[#0a0a0a] border-b border-white/10 px-4 py-2" id="mobileSearchBar"><div class="relative"><input class="w-full bg-[#111] border border-white/10 rounded-full py-2 pl-9 pr-4 text-xs text-white focus:border-cyan-500/50 focus:outline-none" id="mobileSearchInput" placeholder="Search channels..." type="text"/><i class="fas fa-search absolute left-3 top-2.5 text-gray-500 text-xs"></i></div></div></header><div class="settings-overlay" id="settingsOverlay"></div><div class="settings-sidebar" id="settingsSidebar"><div class="sidebar-header"><div class="flex items-center gap-3"><i class="fas fa-cog text-cyan-400 text-lg"></i><h2 class="brand-font text-sm font-bold text-white tracking-wider">SETTINGS</h2></div><button class="text-gray-400 hover:text-white transition text-lg" id="closeSettingsBtn" onclick="if(typeof closeSettings==='function')closeSettings()"><i class="fas fa-times"></i></button></div><div class="sidebar-body"><div class="sidebar-section"><div class="sidebar-section-title"><i class="fas fa-bolt"></i> Quick Categories</div><div id="adminCategoryButtons"></div></div><div class="sidebar-section"><div class="sidebar-section-title"><i class="fas fa-tv"></i> TV Mode</div><div class="tv-toggle-row" id="tvModeToggleRow" tabindex="0"><div class="toggle-label"><i class="fas fa-tv text-cyan-400"></i> <span>TV Screen Mode</span></div><div class="tv-toggle-switch"><input id="tvModeCheckbox" type="checkbox"/><span class="tv-toggle-slider"></span></div></div><p class="text-[10px] text-gray-600 mt-2">Turn on to use split layout (Channels left, Player right). Auto-enabled on TV devices.</p><button class="quick-cat-btn" id="favFilterBtn" tabindex="0"><i class="fas fa-heart text-red-400"></i> Favorites</button><div class="tv-toggle-row" id="themeToggleRow" tabindex="0" onclick="toggleTheme()"><div class="toggle-label"><i class="fas fa-sun text-yellow-400"></i> <span>Light Theme</span></div><div class="tv-toggle-switch"><input id="themeCheckbox" type="checkbox"/><span class="tv-toggle-slider"></span></div></div><div class="tv-toggle-row" id="bfModeToggleRow" tabindex="0"><div class="toggle-label"><i class="fas fa-bolt text-green-400"></i> <span>Buffering-Free</span></div><div class="tv-toggle-switch"><input id="bfModeCheckbox" type="checkbox"/><span class="tv-toggle-slider"></span></div></div></div><div class="sidebar-section"><div class="sidebar-section-title"><i class="fas fa-link"></i> Custom M3U Playlist</div><div class="m3u-input-group"><input id="customM3uInput" placeholder="Paste M3U URL here..." tabindex="0" type="text"/><button id="loadM3uBtn" tabindex="0">Load</button></div><div style="margin-top:8px;"><input type="file" id="localM3uFile" accept=".m3u,.m3u8,.txt" style="display:none"/><button class="quick-cat-btn" id="localM3uBtn" tabindex="0" style="width:100%;margin:0;"><i class="fas fa-upload text-cyan-400"></i> Upload Local M3U File</button></div><p class="text-[10px] text-gray-600 mb-3">Paste any M3U/M3U8 playlist URL to load channels.</p><div class="sidebar-section-title" style="margin-top:8px"><i class="fas fa-history"></i> History</div><div id="m3uHistoryList"><p class="text-[10px] text-gray-600 italic">No history yet.</p></div></div><div class="sidebar-section"><div class="sidebar-section-title"><i class="fas fa-download"></i> Download Our App</div><a class="playstore-btn" href="https://ai-multitool.netlify.app/aitools/app-store" rel="noopener" tabindex="0" target="_blank"><img alt="Get it on Google Play" src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" style="height:32px;width:auto;object-fit:contain;"/><div class="ps-text"><small>GET IT ON</small><span>Google Play</span></div></a></div><div class="sidebar-section"><div class="sidebar-section-title"><i class="fas fa-headset"></i> Any Problem? Contact Dev</div><div class="tg-input-wrapper"><i class="fab fa-telegram" style="color:#229ED9;font-size:18px;flex-shrink:0"></i><input id="problemInput" placeholder="Type your message..." tabindex="0" type="text"/><button class="tg-input-send" id="sendProblemBtn" tabindex="0" title="Send"><i class="fas fa-paper-plane" style="font-size:14px"></i></button></div><p class="text-[10px] text-gray-600 mt-2">Your message will be sent to the developer via Telegram.</p></div></div></div><div class="worldcup-overlay" id="worldcupOverlay"></div><div class="worldcup-modal" id="worldcupModal"><div class="modal-header"><div class="flex items-center gap-3"><i class="fas fa-trophy text-yellow-400 text-lg"></i><h2 class="brand-font text-sm font-bold text-white tracking-wider">WORLD CUP</h2></div><button class="text-gray-400 hover:text-white transition text-lg" id="closeWorldcupBtn"><i class="fas fa-times"></i></button></div><div class="modal-body" id="worldcupBody"><div class="flex flex-col items-center justify-center py-8" id="wcLoader"><svg height="30" style="animation:channelSvgSpin 1.2s linear infinite" viewbox="0 0 50 50" width="30" xmlns="http://www.w3.org/2000/svg"><circle cx="25" cy="25" fill="none" r="20" stroke="#ffaa00" stroke-dasharray="31.4 31.4" stroke-linecap="round" stroke-width="3"></circle></svg><span class="text-[10px] text-gray-500 mt-2">Loading schedule...</span></div><div id="wcMatches"></div><div class="mt-4" id="wcAdBanner"></div><div class="hidden flex flex-col items-center justify-center py-8 opacity-40" id="wcEmptyState"><i class="fas fa-trophy text-4xl mb-3 text-gray-600"></i><p class="text-xs text-gray-500">No matches scheduled right now.</p></div></div></div><div class="popup-ad-overlay" id="popupAdOverlay"><div class="popup-ad-card" id="popupAdCard"><span class="popup-ad-sponsored">Sponsored</span><button class="popup-ad-close" id="popupAdClose"><i class="fas fa-times"></i></button><img alt="Ad" id="popupAdImg" src=""/><div class="popup-ad-body"><div class="popup-ad-title" id="popupAdTitle"></div><div class="popup-ad-desc" id="popupAdDesc"></div><a class="popup-ad-btn" href="#" id="popupAdBtn" rel="noopener" target="_blank">Learn More</a></div></div></div><div class="refresh-modal-overlay" id="refreshOverlay"></div><div class="refresh-modal" id="refreshModal"><div class="modal-header"><div class="flex items-center gap-3"><i class="fas fa-sync-alt text-cyan-400"></i><h2 class="brand-font text-sm font-bold text-white tracking-wider">REFRESH / CLEAR DATA</h2></div><button class="text-gray-400 hover:text-white transition text-lg" id="closeRefreshBtn"><i class="fas fa-times"></i></button></div><div class="modal-body" style="padding:20px;"><p class="text-xs text-gray-400 mb-4">Choose an option below:</p><button id="cleanDataBtn" tabindex="0" style="background:linear-gradient(135deg,#ff0055,#cc0044);color:#fff;">Clean All Data &amp; Refresh</button><button id="normalRefreshBtn" tabindex="0" style="background:linear-gradient(135deg,rgba(0,243,255,0.2),rgba(0,243,255,0.1));color:var(--neon-blue);border:1px solid rgba(0,243,255,0.3);">Normal Refresh</button><button id="cancelRefreshBtn" tabindex="0" style="background:rgba(255,255,255,0.05);color:#888;border:1px solid rgba(255,255,255,0.1);">Cancel</button></div></div><!-- Disclaimer/DMCA Modal -->
 <div class="refresh-modal-overlay" id="disclaimerOverlay"></div>
 <div class="refresh-modal" id="disclaimerModal" style="max-width: 450px;">
@@ -3083,17 +3142,23 @@ const closeSettingsBtn=document.getElementById("closeSettingsBtn");
 function openSettings(){
  settingsSidebar.classList.add("active");
  settingsOverlay.classList.add("active");
- document.body.classList.add("menu-open"); 
- // Hide floating button when sidebar opens
- if(tvModeFloatSettings) tvModeFloatSettings.style.display = "none";
+ document.body.classList.add("menu-open");
+ // Reset any inline styles from force-close
+ settingsSidebar.style.right = '';
+ settingsOverlay.style.opacity = '';
+ settingsOverlay.style.visibility = '';
 }
 function closeSettings(){
  settingsSidebar.classList.remove("active");
  settingsOverlay.classList.remove("active");
- document.body.classList.remove("menu-open"); 
- // Show floating button when sidebar closes (only in TV mode)
- if(tvModeFloatSettings && document.body.classList.contains("tv-mode")){
-  tvModeFloatSettings.style.display = "flex";
+ document.body.classList.remove("menu-open");
+ // Force close: ensure sidebar is fully hidden
+ settingsSidebar.style.right = '-360px';
+ settingsOverlay.style.opacity = '0';
+ settingsOverlay.style.visibility = 'hidden';
+ // Don't show floating button anymore in TV mode - it's removed
+ if(tvModeFloatSettings){
+  tvModeFloatSettings.style.display = "none";
  }
 }
 settingsToggleBtn.addEventListener("click",openSettings);
@@ -3102,22 +3167,8 @@ settingsOverlay.addEventListener("click",closeSettings);
 // TV Mode Floating Settings Button
 const tvModeFloatSettings=document.getElementById("tvModeFloatSettings");
 if(tvModeFloatSettings){
- tvModeFloatSettings.addEventListener("click",()=>{
-  if(settingsSidebar.classList.contains("active")){
-   closeSettings();
-  } else {
-   openSettings();
-  }
- });
- // Hide floating button when sidebar is open
- const settingsObserver = new MutationObserver(() => {
-  if(settingsSidebar.classList.contains("active")){
-   tvModeFloatSettings.style.display = "none";
-  } else if(document.body.classList.contains("tv-mode")){
-   tvModeFloatSettings.style.display = "flex";
-  }
- });
- settingsObserver.observe(settingsSidebar, { attributes: true, attributeFilter: ["class"] });
+ // Floating settings button is now removed from TV mode - always hidden
+ tvModeFloatSettings.style.display = "none";
 }
 
 // Escape key to close settings/sidebar in TV mode
@@ -3403,7 +3454,14 @@ function toggleBFMode() {
   if (cb) cb.checked = bfModeEnabled;
   const indicator = document.getElementById('bfIndicator');
   if (indicator) {
+    // Show as toast - briefly visible then auto-hide
     indicator.classList.toggle('active', bfModeEnabled);
+    // Auto-hide the indicator after 2 seconds (toast behavior)
+    indicator.classList.remove('bf-toast');
+    clearTimeout(indicator._bfTimer);
+    indicator._bfTimer = setTimeout(function(){
+      indicator.classList.add('bf-toast');
+    }, 2000);
   }
   localStorage.setItem('aitv_bf_mode', bfModeEnabled ? 'on' : 'off');
   showToast(bfModeEnabled ? 'Buffering-Free Mode ON' : 'Buffering-Free Mode OFF');
@@ -3449,8 +3507,16 @@ document.getElementById('bfModeToggleRow').addEventListener('click', function(e)
     bfModeEnabled = true;
     const cb = document.getElementById('bfModeCheckbox');
     if (cb) cb.checked = true;
+    // Show indicator briefly as toast, then auto-hide
     const indicator = document.getElementById('bfIndicator');
-    if (indicator) indicator.classList.add('active');
+    if (indicator) {
+      indicator.classList.add('active');
+      indicator.classList.remove('bf-toast');
+      clearTimeout(indicator._bfTimer);
+      indicator._bfTimer = setTimeout(function(){
+        indicator.classList.add('bf-toast');
+      }, 2500);
+    }
   }
 })();
 
