@@ -1141,7 +1141,7 @@
 
     <!-- Player -->
     <div class="player-wrapper" id="playerWrapper">
-      <video id="tvVideo" playsinline></video>
+      <video id="tvVideo" playsinline webkit-playsinline></video>
       <iframe id="tvIframe" allow="autoplay; encrypted-media; accelerometer; clipboard-write; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
       <div class="player-placeholder" id="playerPlaceholder">
         <i class="fas fa-satellite-dish"></i>
@@ -3629,16 +3629,21 @@
             currentExtinf.streamType = 'hls';
           } else if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) {
             currentExtinf.streamType = 'iframe';
-            // Convert YouTube watch URLs to embed URLs
+            // Convert YouTube watch/live/short URLs to embed URLs
             if (urlLower.includes('youtube.com/watch')) {
               const vidMatch = line.match(/[?&]v=([^&]+)/);
               if (vidMatch) {
-                currentExtinf.url = 'https://www.youtube.com/embed/' + vidMatch[1];
+                currentExtinf.url = 'https://www.youtube.com/embed/' + vidMatch[1] + '?autoplay=1&mute=0&rel=0&modestbranding=1';
+              }
+            } else if (urlLower.includes('youtube.com/live/')) {
+              const vidMatch = line.match(/youtube\.com\/live\/([a-zA-Z0-9_-]+)/);
+              if (vidMatch) {
+                currentExtinf.url = 'https://www.youtube.com/embed/' + vidMatch[1] + '?autoplay=1&mute=0&rel=0&modestbranding=1&live=1';
               }
             } else if (urlLower.includes('youtu.be/')) {
               const vidMatch = line.match(/youtu\.be\/([^?&]+)/);
               if (vidMatch) {
-                currentExtinf.url = 'https://www.youtube.com/embed/' + vidMatch[1];
+                currentExtinf.url = 'https://www.youtube.com/embed/' + vidMatch[1] + '?autoplay=1&mute=0&rel=0&modestbranding=1';
               }
             }
           } else if (urlLower.includes('.mpd')) {
@@ -4028,7 +4033,16 @@
       
       if (ch.stream_type === 'iframe' && ch.stream_url) {
         iframe.style.display = 'block';
-        iframe.src = ch.stream_url;
+        // Convert YouTube URLs to embed format
+        let embedUrl = ch.stream_url;
+        const ytMatch = ch.stream_url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+        if (ytMatch) {
+          embedUrl = 'https://www.youtube.com/embed/' + ytMatch[1] + '?autoplay=1&mute=0&rel=0&modestbranding=1';
+          if (ch.stream_url.includes('/live/') || ch.stream_url.toLowerCase().includes('live')) {
+            embedUrl += '&live=1';
+          }
+        }
+        iframe.src = embedUrl;
         placeholder.style.display = 'none';
       } else if (ch.stream_type === 'upload' && ch.media_data) {
         try {
@@ -4535,6 +4549,47 @@
         indicator._bfTimer = setTimeout(function(){ indicator.classList.add('bf-toast'); }, 2500);
       }
     }
+
+    // ===== FULLSCREEN =====
+    function toggleFullscreen() {
+      const wrapper = document.getElementById('playerWrapper');
+      const video = document.getElementById('tvVideo');
+      const fsBtn = document.getElementById('fullscreenBtn');
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        // Try to enter fullscreen
+        if (wrapper && wrapper.requestFullscreen) {
+          wrapper.requestFullscreen().catch(e => {
+            // Fallback for iOS Safari
+            if (video && video.webkitEnterFullscreen) {
+              try { video.webkitEnterFullscreen(); } catch(err) {}
+            }
+          });
+        } else if (wrapper && wrapper.webkitRequestFullscreen) {
+          wrapper.webkitRequestFullscreen();
+        } else if (video && video.webkitEnterFullscreen) {
+          // iOS Safari fallback: use video element's native fullscreen
+          try { video.webkitEnterFullscreen(); } catch(e) {}
+        }
+        if (fsBtn) fsBtn.innerHTML = '<i class="fas fa-compress"></i>';
+      } else {
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+        if (fsBtn) fsBtn.innerHTML = '<i class="fas fa-expand"></i>';
+      }
+    }
+    // Listen for fullscreen change events to update button icon
+    document.addEventListener('fullscreenchange', function() {
+      const fsBtn = document.getElementById('fullscreenBtn');
+      if (fsBtn) fsBtn.innerHTML = document.fullscreenElement ? '<i class="fas fa-compress"></i>' : '<i class="fas fa-expand"></i>';
+    });
+    document.addEventListener('webkitfullscreenchange', function() {
+      const fsBtn = document.getElementById('fullscreenBtn');
+      if (fsBtn) fsBtn.innerHTML = document.webkitFullscreenElement ? '<i class="fas fa-compress"></i>' : '<i class="fas fa-expand"></i>';
+    });
 
     // ===== PLAY/PAUSE =====
     function togglePlayPause() {
