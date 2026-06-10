@@ -25,11 +25,15 @@ CREATE TABLE IF NOT EXISTS admin_ads (
     description TEXT DEFAULT '',
     image_url TEXT DEFAULT '',
     link_url TEXT DEFAULT '',
+    button_text TEXT DEFAULT 'Learn More',
     position INTEGER DEFAULT 0,
     countdown INTEGER DEFAULT 5,
     active BOOLEAN DEFAULT true,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add button_text column to existing admin_ads table (run if table already exists)
+-- ALTER TABLE admin_ads ADD COLUMN IF NOT EXISTS button_text TEXT DEFAULT 'Learn More';
 
 -- ============================================
 -- Table 3: live_views (রিয়েল-টাইম ভিউ কাউন্ট / আই ইন্ডিকেটর)
@@ -113,9 +117,19 @@ CREATE TABLE IF NOT EXISTS match_schedules (
     match_time TEXT NOT NULL,
     tv_channel TEXT DEFAULT '',
     stage TEXT DEFAULT '',
+    home_flag_url TEXT DEFAULT '',
+    away_flag_url TEXT DEFAULT '',
+    home_logo_url TEXT DEFAULT '',
+    away_logo_url TEXT DEFAULT '',
     active BOOLEAN DEFAULT true,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add custom flag/logo columns to existing match_schedules table (run if table already exists)
+-- ALTER TABLE match_schedules ADD COLUMN IF NOT EXISTS home_flag_url TEXT DEFAULT '';
+-- ALTER TABLE match_schedules ADD COLUMN IF NOT EXISTS away_flag_url TEXT DEFAULT '';
+-- ALTER TABLE match_schedules ADD COLUMN IF NOT EXISTS home_logo_url TEXT DEFAULT '';
+-- ALTER TABLE match_schedules ADD COLUMN IF NOT EXISTS away_logo_url TEXT DEFAULT '';
 
 -- ============================================
 -- Table 5: admin_ad_scripts (এড স্ক্রিপ্ট - Adsterra/Monetag/PropellerAds)
@@ -186,7 +200,7 @@ CREATE TABLE IF NOT EXISTS tv_channels (
     category TEXT NOT NULL DEFAULT 'Default',
     channel_name TEXT NOT NULL,
     stream_url TEXT DEFAULT '',
-    stream_type TEXT NOT NULL DEFAULT 'hls' CHECK (stream_type IN ('hls', 'iframe', 'dash', 'mp4', 'upload')),
+    stream_type TEXT NOT NULL DEFAULT 'hls' CHECK (stream_type IN ('hls', 'iframe', 'dash', 'mp4', 'upload', 'm3u_playlist')),
     logo_url TEXT DEFAULT '',
     logo_data TEXT DEFAULT '',
     media_data TEXT DEFAULT '',

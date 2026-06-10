@@ -203,7 +203,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport"/>
   <title>AI TV Pro - Admin Panel</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -758,12 +758,452 @@
       background-clip: text;
       animation: shimmer 3s linear infinite;
     }
+
+    /* ===== CSS Custom Properties for Theming (Feature 3) ===== */
+    :root {
+      --bg-primary: #050505;
+      --bg-card: #0a0a0f;
+      --bg-input: #0f0f1a;
+      --bg-header: rgba(5,5,5,0.8);
+      --text-primary: #e0e0e0;
+      --text-muted: #6b7280;
+      --border-color: #1a1a2e;
+      --border-glow: #00f3ff22;
+      --sidebar-bg: #0a0a0f;
+      --sheet-bg: #0a0a0f;
+      --player-bg: #000;
+      --channel-card-bg: #0f0f1a;
+    }
+    .light-theme {
+      --bg-primary: #f0f2f5;
+      --bg-card: #ffffff;
+      --bg-input: #f5f5f5;
+      --bg-header: rgba(255,255,255,0.9);
+      --text-primary: #1a1a2e;
+      --text-muted: #6b7280;
+      --border-color: #d1d5db;
+      --border-glow: #00f3ff22;
+      --sidebar-bg: #ffffff;
+      --sheet-bg: #ffffff;
+      --player-bg: #000;
+      --channel-card-bg: #ffffff;
+    }
+    .light-theme body { background: #f0f2f5; color: #1a1a2e; }
+    .light-theme .admin-card,
+    .light-theme .stat-card { background: #fff; border-color: #d1d5db; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .light-theme .sidebar { background: #fff; border-color: #d1d5db; }
+    .light-theme .sidebar-item { color: #4b5563; }
+    .light-theme .sidebar-item:hover { background: #f3f4f6; color: #1a1a2e; }
+    .light-theme .sidebar-item.active { background: #eff6ff; color: #0099cc; border-left-color: #0099cc; }
+    .light-theme .admin-input, .light-theme .admin-select { background: #f5f5f5; border-color: #d1d5db; color: #1a1a2e; }
+    .light-theme .admin-input:focus, .light-theme .admin-select:focus { border-color: #0099cc; }
+    .light-theme .ad-item, .light-theme .match-item, .light-theme .script-item { background: #fff; border-color: #d1d5db; }
+    .light-theme .modal-box { background: #fff; border-color: #d1d5db; }
+    .light-theme .login-card { background: #fff; border-color: #d1d5db; }
+    .light-theme .login-bg { background: radial-gradient(ellipse at center, #e0e7ff 0%, #f0f2f5 70%); }
+    .light-theme header { background: rgba(255,255,255,0.9); border-color: #d1d5db; }
+    .light-theme ::-webkit-scrollbar-track { background: #f0f0f0; }
+    .light-theme ::-webkit-scrollbar-thumb { background: #ccc; }
+
+    /* ===== TV Streaming Interface Styles ===== */
+    #tvApp {
+      min-height: 100vh;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Exo 2', sans-serif;
+      display: none;
+      flex-direction: column;
+    }
+    #tvApp.active { display: flex; }
+    .tv-header {
+      background: var(--bg-header);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+    .tv-header-left { display: flex; align-items: center; gap: 12px; }
+    .tv-header-right { display: flex; align-items: center; gap: 12px; }
+    .tv-menu-btn {
+      background: none; border: none; color: var(--text-primary);
+      cursor: pointer; font-size: 20px; padding: 6px;
+      transition: color 0.2s;
+    }
+    .tv-menu-btn:hover { color: #00f3ff; }
+
+    /* Player Container */
+    .player-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      background: #000;
+      aspect-ratio: 16/9;
+      overflow: hidden;
+      border-radius: 0 0 12px 12px;
+    }
+    .player-wrapper video,
+    .player-wrapper iframe {
+      width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0;
+    }
+    .player-wrapper iframe { display: none; }
+    .player-placeholder {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #6b7280; gap: 8px;
+    }
+    .player-placeholder i { font-size: 48px; color: #00f3ff44; }
+
+    /* Player Controls */
+    .player-controls {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.85));
+      padding: 40px 16px 12px;
+      display: flex; align-items: center; justify-content: space-between;
+      opacity: 0; transition: opacity 0.3s;
+      z-index: 5;
+    }
+    .player-wrapper:hover .player-controls,
+    .player-controls.force-show { opacity: 1; }
+    .ctrl-btn {
+      background: none; border: none; color: #fff; cursor: pointer;
+      font-size: 20px; padding: 8px; transition: all 0.2s; border-radius: 50%;
+    }
+    .ctrl-btn:hover { background: rgba(255,255,255,0.15); color: #00f3ff; }
+    .ctrl-btn.bf-toggle { font-size: 12px; font-family: 'Orbitron', sans-serif; font-weight: 700; }
+    .ctrl-btn.bf-toggle.active { color: #00ff88; text-shadow: 0 0 8px #00ff8866; }
+    .center-controls { display: flex; align-items: center; gap: 8px; }
+    .right-controls { display: flex; align-items: center; gap: 8px; }
+    .left-controls { display: flex; align-items: center; gap: 4px; }
+    .now-playing-label {
+      color: #9ca3af; font-size: 11px; max-width: 150px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* BF Mode Indicator */
+    .bf-indicator {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(0,255,136,0.15); border: 1px solid #00ff8844;
+      color: #00ff88; font-family: 'Orbitron', sans-serif; font-size: 10px;
+      padding: 3px 8px; border-radius: 4px; z-index: 6; display: none;
+    }
+    .bf-indicator.show { display: block; }
+
+    /* Channel Grid */
+    .channel-grid-container {
+      flex: 1; padding: 16px; overflow-y: auto;
+    }
+    .category-tabs {
+      display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto;
+      padding-bottom: 4px; flex-wrap: nowrap;
+    }
+    .cat-tab {
+      background: var(--channel-card-bg); border: 1px solid var(--border-color);
+      border-radius: 20px; padding: 6px 16px; font-size: 13px;
+      cursor: pointer; white-space: nowrap; transition: all 0.2s;
+      color: var(--text-muted); font-family: 'Exo 2', sans-serif;
+    }
+    .cat-tab:hover { border-color: #00f3ff44; color: #00f3ff; }
+    .cat-tab.active { background: #00f3ff15; border-color: #00f3ff; color: #00f3ff; }
+    .channel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .channel-card {
+      background: var(--channel-card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px; padding: 12px; text-align: center;
+      cursor: pointer; transition: all 0.25s; position: relative;
+      overflow: hidden;
+    }
+    .channel-card:hover {
+      border-color: #00f3ff44;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .channel-card-logo {
+      width: 48px; height: 48px; border-radius: 8px;
+      margin: 0 auto 8px; overflow: hidden;
+      background: #0a0a0f; display: flex; align-items: center; justify-content: center;
+    }
+    .light-theme .channel-card-logo { background: #f0f0f0; }
+    .channel-card-logo img { width: 100%; height: 100%; object-fit: contain; }
+    .channel-card-name {
+      font-size: 12px; font-weight: 600; color: var(--text-primary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .channel-card-type {
+      font-size: 10px; color: var(--text-muted); margin-top: 2px;
+    }
+
+    /* Feature 5: Currently Playing Channel Marking */
+    .channel-card.is-playing {
+      border-color: #00f3ff;
+      box-shadow: 0 0 12px #00f3ff44, 0 0 24px #00f3ff22, inset 0 0 8px #00f3ff08;
+    }
+    .live-badge {
+      position: absolute; top: 6px; right: 6px;
+      background: #ff0055; color: #fff;
+      font-family: 'Orbitron', sans-serif; font-size: 8px; font-weight: 700;
+      padding: 2px 6px; border-radius: 3px;
+      animation: livePulse 1.5s ease-in-out infinite;
+      display: none; z-index: 2;
+    }
+    .channel-card.is-playing .live-badge { display: block; }
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 4px #ff005588; }
+      50% { opacity: 0.6; box-shadow: 0 0 12px #ff005544; }
+    }
+
+    /* Settings Sidebar (Feature 1: slide-in from right) */
+    .tv-settings-sidebar {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: 280px; background: var(--sidebar-bg);
+      border-left: 1px solid var(--border-color);
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      z-index: 45; overflow-y: auto;
+      box-shadow: -4px 0 24px rgba(0,0,0,0.4);
+    }
+    .tv-settings-sidebar.open {
+      transform: translateX(0);
+    }
+    .tv-sidebar-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      z-index: 44; display: none;
+    }
+    .tv-sidebar-overlay.show { display: block; }
+    .tv-sidebar-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--border-color);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .tv-sidebar-close {
+      background: none; border: none; color: var(--text-muted);
+      font-size: 18px; cursor: pointer; padding: 4px;
+    }
+    .tv-sidebar-close:hover { color: #ff0055; }
+    .tv-sidebar-section {
+      padding: 16px 20px; border-bottom: 1px solid var(--border-color);
+    }
+    .tv-sidebar-section h4 {
+      font-family: 'Orbitron', sans-serif; font-size: 10px;
+      text-transform: uppercase; letter-spacing: 1px;
+      color: var(--text-muted); margin-bottom: 12px;
+    }
+    .tv-sidebar-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0; gap: 12px;
+    }
+    .tv-sidebar-item-label {
+      font-size: 13px; color: var(--text-primary); flex: 1;
+    }
+    .tv-sidebar-item-desc {
+      font-size: 10px; color: var(--text-muted); margin-top: 2px;
+    }
+
+    /* TV Mode Styles */
+    .tv-mode-active #tvApp .channel-grid-container { display: none; }
+    .tv-mode-active #tvApp .player-wrapper {
+      max-width: 100%; border-radius: 0; position: fixed;
+      inset: 0; z-index: 40; aspect-ratio: auto;
+    }
+    .tv-mode-active #tvApp .player-controls { opacity: 1; }
+    .tv-mode-active #tvApp .tv-header { display: none; }
+
+    /* D-Pad Focus for TV Mode */
+    .dpad-focus {
+      outline: 2px solid #00f3ff;
+      outline-offset: 2px;
+      box-shadow: 0 0 12px #00f3ff66;
+    }
+
+    /* Ad Blocker Overlay (Feature 4) */
+    .adblock-overlay {
+      position: fixed; inset: 0; background: #fff; z-index: 99999;
+      display: none; align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px; padding: 32px; text-align: center;
+    }
+    .adblock-overlay.show { display: flex; }
+    .adblock-overlay h2 { color: #1a1a2e; font-size: 24px; font-family: 'Orbitron', sans-serif; }
+    .adblock-overlay p { color: #6b7280; font-size: 14px; max-width: 400px; line-height: 1.6; }
+    .adblock-overlay .retry-btn {
+      background: linear-gradient(135deg, #00f3ff, #0099cc); color: #050505;
+      border: none; padding: 12px 28px; border-radius: 8px;
+      font-family: 'Orbitron', sans-serif; font-weight: 600; font-size: 13px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .adblock-overlay .retry-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px #00f3ff44; }
+    .adblock-overlay i { font-size: 48px; color: #ff0055; }
+
+    /* Bottom Sheet (mobile) */
+    .bottom-sheet {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--sheet-bg); border-top: 1px solid var(--border-color);
+      border-radius: 16px 16px 0 0; padding: 20px;
+      transform: translateY(100%); transition: transform 0.3s ease;
+      z-index: 46; max-height: 70vh; overflow-y: auto;
+    }
+    .bottom-sheet.open { transform: translateY(0); }
+    .bottom-sheet-handle {
+      width: 40px; height: 4px; background: var(--border-color);
+      border-radius: 2px; margin: 0 auto 16px;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .player-wrapper { border-radius: 0; }
+      .channel-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+      .channel-card { padding: 8px; }
+      .channel-card-logo { width: 36px; height: 36px; }
+      .channel-card-name { font-size: 10px; }
+      .tv-settings-sidebar { width: 260px; }
+      .now-playing-label { display: none; }
+    }
   </style>
 </head>
 <body>
 
   <!-- Toast Container -->
   <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ========== AD BLOCKER OVERLAY (Feature 4) ========== -->
+  <div id="adblockOverlay" class="adblock-overlay">
+    <i class="fas fa-shield-alt"></i>
+    <h2>Ad Blocker Detected!</h2>
+    <p>Please disable your ad blocker to continue using AI TV Pro. This service is supported by ads.</p>
+    <button class="retry-btn" onclick="recheckAdBlocker()"><i class="fas fa-redo mr-2"></i>Retry</button>
+  </div>
+
+  <!-- ========== TV STREAMING INTERFACE ========== -->
+  <div id="tvApp">
+    <!-- TV Header -->
+    <div class="tv-header">
+      <div class="tv-header-left">
+        <button class="tv-menu-btn" id="tvMenuBtn" onclick="toggleTvSidebar()" aria-label="Open settings">
+          <i class="fas fa-bars"></i>
+        </button>
+        <i class="fas fa-tv text-aitv-neon-blue"></i>
+        <span class="font-orbitron text-sm font-bold logo-shimmer">AI TV Pro</span>
+      </div>
+      <div class="tv-header-right">
+        <span class="text-xs text-aitv-muted hidden sm:inline" id="tvViewerCount">
+          <i class="fas fa-circle text-aitv-neon-green text-[8px] mr-1 pulse-neon"></i> Live
+        </span>
+        <button class="tv-menu-btn" onclick="showAdminPanel()" title="Admin Panel">
+          <i class="fas fa-cog"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Player -->
+    <div class="player-wrapper" id="playerWrapper">
+      <video id="tvVideo" playsinline></video>
+      <iframe id="tvIframe" allow="autoplay; encrypted-media; accelerometer; clipboard-write; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      <div class="player-placeholder" id="playerPlaceholder">
+        <i class="fas fa-satellite-dish"></i>
+        <p style="font-size:13px;">Select a channel to start watching</p>
+      </div>
+      <div class="bf-indicator" id="bfIndicator">BF: ON</div>
+      <!-- Player Controls -->
+      <div class="player-controls force-show" id="playerControls">
+        <div class="left-controls">
+          <span class="now-playing-label" id="nowPlayingLabel">No channel</span>
+        </div>
+        <div class="center-controls">
+          <button class="ctrl-btn" id="prevBtn" onclick="playPrevChannel()" title="Previous"><i class="fas fa-step-backward"></i></button>
+          <button class="ctrl-btn" id="playPauseBtn" onclick="togglePlayPause()" title="Play/Pause"><i class="fas fa-play"></i></button>
+          <button class="ctrl-btn" id="nextBtn" onclick="playNextChannel()" title="Next"><i class="fas fa-step-forward"></i></button>
+        </div>
+        <div class="right-controls">
+          <button class="ctrl-btn bf-toggle" id="bfToggleBtn" onclick="toggleBFMode()" title="Buffering-Free Mode">BF</button>
+          <button class="ctrl-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Fullscreen"><i class="fas fa-expand"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Channel Grid -->
+    <div class="channel-grid-container">
+      <!-- Category Tabs -->
+      <div class="category-tabs" id="categoryTabs">
+        <div class="cat-tab active" data-cat="all" onclick="filterTvChannels('all', this)">All</div>
+        <div class="cat-tab" data-cat="Sports" onclick="filterTvChannels('Sports', this)">Sports</div>
+        <div class="cat-tab" data-cat="News" onclick="filterTvChannels('News', this)">News</div>
+        <div class="cat-tab" data-cat="Cartoon" onclick="filterTvChannels('Cartoon', this)">Cartoon</div>
+        <div class="cat-tab" data-cat="Natok" onclick="filterTvChannels('Natok', this)">Natok</div>
+        <div class="cat-tab" data-cat="Default" onclick="filterTvChannels('Default', this)">Default</div>
+      </div>
+      <!-- Grid -->
+      <div class="channel-grid" id="tvChannelGrid">
+        <div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-muted);">
+          <i class="fas fa-spinner spinner" style="font-size:24px;margin-bottom:8px;display:block;"></i>
+          <p style="font-size:13px;">Loading channels...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TV Settings Sidebar (Feature 1: slides from right, completely hidden when closed) -->
+  <div class="tv-sidebar-overlay" id="tvSidebarOverlay" onclick="closeTvSidebar()"></div>
+  <aside class="tv-settings-sidebar" id="tvSettingsSidebar">
+    <div class="tv-sidebar-header">
+      <span class="font-orbitron text-sm font-bold text-aitv-neon-blue">Settings</span>
+      <button class="tv-sidebar-close" onclick="closeTvSidebar()" aria-label="Close settings"><i class="fas fa-times"></i></button>
+    </div>
+
+    <!-- TV Mode Section -->
+    <div class="tv-sidebar-section">
+      <h4><i class="fas fa-tv mr-1"></i> TV Mode</h4>
+      <div class="tv-sidebar-item">
+        <div>
+          <div class="tv-sidebar-item-label">TV Mode</div>
+          <div class="tv-sidebar-item-desc">Full-screen player with D-Pad control</div>
+        </div>
+        <div class="toggle-switch" id="tvModeToggle" onclick="toggleTvMode()"></div>
+      </div>
+    </div>
+
+    <!-- Theme Section (Feature 3) -->
+    <div class="tv-sidebar-section">
+      <h4><i class="fas fa-palette mr-1"></i> Appearance</h4>
+      <div class="tv-sidebar-item">
+        <div>
+          <div class="tv-sidebar-item-label">Dark / White Mode</div>
+          <div class="tv-sidebar-item-desc">Switch between dark and light theme</div>
+        </div>
+        <div class="toggle-switch" id="themeToggle" onclick="toggleTheme()"></div>
+      </div>
+    </div>
+
+    <!-- Buffering-Free Mode Section (Feature 6) -->
+    <div class="tv-sidebar-section">
+      <h4><i class="fas fa-bolt mr-1"></i> Playback</h4>
+      <div class="tv-sidebar-item">
+        <div>
+          <div class="tv-sidebar-item-label">Buffering-Free Mode</div>
+          <div class="tv-sidebar-item-desc">Play 10s behind live for smoother playback</div>
+        </div>
+        <div class="toggle-switch green" id="bfModeSidebarToggle" onclick="toggleBFMode()"></div>
+      </div>
+    </div>
+
+    <!-- Admin Link -->
+    <div class="tv-sidebar-section">
+      <h4><i class="fas fa-shield-alt mr-1"></i> Admin</h4>
+      <div class="tv-sidebar-item" style="cursor:pointer;" onclick="showAdminPanel()">
+        <div>
+          <div class="tv-sidebar-item-label">Open Admin Panel</div>
+          <div class="tv-sidebar-item-desc">Manage channels, ads, and settings</div>
+        </div>
+        <i class="fas fa-external-link-alt" style="color:var(--text-muted);font-size:12px;"></i>
+      </div>
+    </div>
+  </aside>
 
   <!-- ========== LOGIN SCREEN ========== -->
   <div id="loginScreen" class="login-bg min-h-screen flex items-center justify-center bg-grid">
@@ -839,6 +1279,9 @@
         </div>
         <div class="sidebar-item" data-section="security" onclick="switchSection('security')">
           <i class="fas fa-shield-alt"></i> Security
+        </div>
+        <div class="sidebar-item" data-section="visitorlogs" onclick="switchSection('visitorlogs')">
+          <i class="fas fa-eye"></i> Visitor Logs
         </div>
         <div class="sidebar-item" data-section="maintenance" onclick="switchSection('maintenance')">
           <i class="fas fa-tools"></i> Maintenance Mode
@@ -946,8 +1389,9 @@
                 <span class="text-aitv-muted text-xs">TV Channels</span>
                 <i class="fas fa-tv text-aitv-neon-blue text-sm"></i>
               </div>
-              <div class="flex items-center gap-2">
-                <span id="dashChannelCount" class="font-orbitron text-2xl font-bold text-aitv-neon-blue">0</span>
+              <div class="flex items-center gap-1">
+                <span id="dashChannelCount" class="font-orbitron text-xl font-bold text-aitv-neon-blue">0</span>
+                <span class="text-aitv-muted text-[9px]">visible/total</span>
               </div>
             </div>
           </div>
@@ -1015,9 +1459,27 @@
                   <option value="Cartoon">Cartoon</option>
                   <option value="Natok">Natok</option>
                 </select>
+                <select id="channelSortBy" class="admin-select" style="max-width:180px;" onchange="renderChannelList()">
+                  <option value="sort_order">Default (Sort Order)</option>
+                  <option value="name_az">Name (A-Z)</option>
+                  <option value="name_za">Name (Z-A)</option>
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                </select>
                 <button onclick="openChannelModal()" class="btn-neon text-xs py-2 px-4">
                   <i class="fas fa-plus mr-1"></i> Add Channel
                 </button>
+                <div class="relative">
+                  <button onclick="toggleDownloadMenu()" class="btn-ghost text-xs py-2 px-4 flex items-center gap-1">
+                    <i class="fas fa-download mr-1"></i> Download <i class="fas fa-chevron-down text-[8px]"></i>
+                  </button>
+                  <div id="downloadMenu" class="hidden absolute right-0 top-full mt-1 bg-[#0f0f1a] border border-aitv-border rounded-lg shadow-2xl z-50 min-w-[200px] overflow-hidden">
+                    <button onclick="downloadAllChannels()" class="w-full text-left px-4 py-3 text-sm text-aitv-muted hover:bg-white/5 hover:text-white transition flex items-center gap-2">
+                      <i class="fas fa-file-download text-aitv-neon-blue"></i> Download All Channels
+                    </button>
+                    <div id="downloadCategoryMenu" class="border-t border-aitv-border"></div>
+                  </div>
+                </div>
               </div>
             </div>
             <p class="text-aitv-muted text-sm mb-4">Manage TV channels across categories. Channels appear in the AI TV Pro frontend based on their category.</p>
@@ -1041,6 +1503,19 @@
                 <i class="fas fa-play-circle text-4xl mb-2"></i>
                 <p class="text-sm">Click preview on a channel to test playback</p>
               </div>
+            </div>
+            <!-- Preview Player Controls -->
+            <div class="flex items-center gap-3 mt-4">
+              <button onclick="previewPlay()" class="btn-ghost text-xs py-2 px-4 flex items-center gap-2" id="previewPlayBtn">
+                <i class="fas fa-play"></i> Play
+              </button>
+              <button onclick="previewPause()" class="btn-ghost text-xs py-2 px-4 flex items-center gap-2">
+                <i class="fas fa-pause"></i> Pause
+              </button>
+              <button onclick="previewStop()" class="btn-ghost text-xs py-2 px-4 flex items-center gap-2">
+                <i class="fas fa-stop"></i> Stop
+              </button>
+              <span id="previewStatus" class="text-xs text-aitv-muted ml-2">No stream loaded</span>
             </div>
           </div>
         </div>
@@ -1228,6 +1703,33 @@
           </div>
         </div>
 
+        <!-- ===== VISITOR LOGS SECTION ===== -->
+        <div id="section-visitorlogs" class="section-content hidden">
+          <div class="admin-card mb-6">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-orbitron text-sm font-semibold text-aitv-neon-blue">
+                <i class="fas fa-eye mr-2"></i>Visitor Logs
+              </h3>
+              <div class="flex items-center gap-3">
+                <span id="visitorTotalCount" class="text-xs text-aitv-muted">Total: 0</span>
+                <button onclick="refreshVisitorLogs()" class="btn-ghost text-xs flex items-center gap-1">
+                  <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+                <button onclick="confirmDeleteAllVisitors()" class="btn-danger text-xs flex items-center gap-1">
+                  <i class="fas fa-trash"></i> Delete All
+                </button>
+              </div>
+            </div>
+            <p class="text-aitv-muted text-sm mb-4">Real-time visitor sessions from the live_views table. Auto-refreshes every 30 seconds.</p>
+            <div id="visitorLogsList" class="space-y-2 max-h-[700px] overflow-y-auto">
+              <div class="text-center py-8 text-aitv-muted">
+                <i class="fas fa-spinner spinner text-xl mb-2"></i>
+                <p class="text-sm">Loading visitor logs...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- ===== MAINTENANCE MODE SECTION ===== -->
         <div id="section-maintenance" class="section-content hidden">
           <div class="admin-card mb-6">
@@ -1320,6 +1822,10 @@
             <label class="block text-sm text-aitv-muted mb-1">Link URL</label>
             <input id="adLinkUrl" type="url" class="admin-input" placeholder="https://example.com" />
           </div>
+          <div>
+            <label class="block text-sm text-aitv-muted mb-1">Button Text</label>
+            <input id="adButtonText" type="text" class="admin-input" placeholder="e.g. Download Now, Open Stream" value="Learn More" />
+          </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm text-aitv-muted mb-1">Position</label>
@@ -1390,6 +1896,26 @@
             <div>
               <label class="block text-sm text-aitv-muted mb-1">Stage / Group</label>
               <input id="matchStage" type="text" class="admin-input" placeholder="e.g. Group A, Quarter Final" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Home Team Flag URL</label>
+              <input id="matchHomeFlagUrl" type="url" class="admin-input" placeholder="https://example.com/flag.png" />
+            </div>
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Away Team Flag URL</label>
+              <input id="matchAwayFlagUrl" type="url" class="admin-input" placeholder="https://example.com/flag.png" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Home Team Logo URL</label>
+              <input id="matchHomeLogoUrl" type="url" class="admin-input" placeholder="https://example.com/logo.png" />
+            </div>
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Away Team Logo URL</label>
+              <input id="matchAwayLogoUrl" type="url" class="admin-input" placeholder="https://example.com/logo.png" />
             </div>
           </div>
           <div class="flex items-center gap-3">
@@ -1749,6 +2275,8 @@
     async function loadAllData() {
       await Promise.all([loadSettings(), loadAds(), loadMatchSchedules(), loadAdScripts(), loadChannels()]);
       updateDashboard();
+      loadVisitorLogs();
+      startVisitorLogsAutoRefresh();
     }
 
     async function loadSettings() {
@@ -2028,7 +2556,10 @@
 
       // Channel count
       const dashChannelCount = document.getElementById('dashChannelCount');
-      if (dashChannelCount) dashChannelCount.textContent = channels.length;
+      if (dashChannelCount) {
+        const visibleCount = channels.filter(c => c.is_visible).length;
+        dashChannelCount.textContent = visibleCount + ' / ' + channels.length;
+      }
 
       // Recent ads
       renderDashRecentAds();
@@ -2064,6 +2595,7 @@
       ads: 'Ad Management',
       adscripts: 'Ad Scripts',
       security: 'Security',
+      visitorlogs: 'Visitor Logs',
       maintenance: 'Maintenance Mode'
     };
 
@@ -2165,6 +2697,7 @@
       document.getElementById('adActiveToggle').classList.add('active');
       document.getElementById('adPosition').value = 0;
       document.getElementById('adCountdown').value = 5;
+      document.getElementById('adButtonText').value = 'Learn More';
 
       // Show/hide countdown field
       document.getElementById('countdownField').style.display = type === 'popup' ? 'block' : 'block';
@@ -2179,6 +2712,7 @@
           document.getElementById('adDescription').value = ad.description || '';
           document.getElementById('adImageUrl').value = ad.image_url || '';
           document.getElementById('adLinkUrl').value = ad.link_url || '';
+          document.getElementById('adButtonText').value = ad.button_text || 'Learn More';
           document.getElementById('adPosition').value = ad.position || 0;
           document.getElementById('adCountdown').value = ad.countdown || 5;
           if (ad.active) {
@@ -2212,12 +2746,13 @@
       const description = document.getElementById('adDescription').value.trim();
       const image_url = document.getElementById('adImageUrl').value.trim();
       const link_url = document.getElementById('adLinkUrl').value.trim();
+      const button_text = document.getElementById('adButtonText').value.trim() || 'Learn More';
       const position = parseInt(document.getElementById('adPosition').value) || 0;
       const countdown = parseInt(document.getElementById('adCountdown').value) || 5;
       const active = document.getElementById('adActiveToggle').classList.contains('active');
 
       const record = {
-        type, title, description, image_url, link_url, position, countdown, active
+        type, title, description, image_url, link_url, button_text, position, countdown, active
       };
 
       try {
@@ -2353,6 +2888,10 @@
           document.getElementById('matchTime').value = match.match_time || '';
           document.getElementById('matchTvChannel').value = match.tv_channel || '';
           document.getElementById('matchStage').value = match.stage || '';
+          document.getElementById('matchHomeFlagUrl').value = match.home_flag_url || '';
+          document.getElementById('matchAwayFlagUrl').value = match.away_flag_url || '';
+          document.getElementById('matchHomeLogoUrl').value = match.home_logo_url || '';
+          document.getElementById('matchAwayLogoUrl').value = match.away_logo_url || '';
           if (match.active) {
             document.getElementById('matchActiveToggle').classList.add('active');
           } else {
@@ -2384,10 +2923,14 @@
       const match_time = document.getElementById('matchTime').value.trim();
       const tv_channel = document.getElementById('matchTvChannel').value.trim();
       const stage = document.getElementById('matchStage').value.trim();
+      const home_flag_url = document.getElementById('matchHomeFlagUrl').value.trim();
+      const away_flag_url = document.getElementById('matchAwayFlagUrl').value.trim();
+      const home_logo_url = document.getElementById('matchHomeLogoUrl').value.trim();
+      const away_logo_url = document.getElementById('matchAwayLogoUrl').value.trim();
       const active = document.getElementById('matchActiveToggle').classList.contains('active');
 
       const record = {
-        team_home, team_away, match_date, match_time, tv_channel, stage, active
+        team_home, team_away, match_date, match_time, tv_channel, stage, home_flag_url, away_flag_url, home_logo_url, away_logo_url, active
       };
 
       try {
@@ -2467,7 +3010,9 @@
         return;
       }
 
-      container.innerHTML = adScripts.map(script => `
+      container.innerHTML = adScripts.map(script => {
+        const isIframe = isIframeScript(script.script_code);
+        return `
         <div class="script-item">
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-3 min-w-0">
@@ -2475,7 +3020,7 @@
                 <i class="fas fa-code text-aitv-neon-pink text-sm"></i>
               </div>
               <div class="min-w-0">
-                <p class="text-sm font-semibold truncate">${escapeHtml(script.name)}</p>
+                <p class="text-sm font-semibold truncate">${escapeHtml(script.name)} ${isIframe ? '<span style="background:rgba(0,243,255,0.15);color:#00f3ff;font-size:9px;padding:1px 6px;border-radius:4px;margin-left:6px;font-weight:700;">IFRAME</span>' : ''}</p>
                 <div class="flex items-center gap-2 mt-1">
                   <span class="badge-platform badge-${script.platform}">${script.platform}</span>
                   <span class="badge-pos">${script.position}</span>
@@ -2500,8 +3045,8 @@
               </button>
             </div>
           </div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
     }
 
     function openScriptModal(editId) {
@@ -2658,7 +3203,31 @@
       if (!container) return;
       
       const filterCat = document.getElementById('channelCategoryFilter')?.value || 'all';
-      const filtered = filterCat === 'all' ? channels : channels.filter(c => c.category === filterCat);
+      let filtered = filterCat === 'all' ? [...channels] : channels.filter(c => c.category === filterCat);
+      
+      // Apply sorting
+      const sortBy = document.getElementById('channelSortBy')?.value || 'sort_order';
+      switch (sortBy) {
+        case 'name_az':
+          filtered.sort((a, b) => (a.channel_name || '').localeCompare(b.channel_name || ''));
+          break;
+        case 'name_za':
+          filtered.sort((a, b) => (b.channel_name || '').localeCompare(a.channel_name || ''));
+          break;
+        case 'newest':
+          filtered.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+          break;
+        case 'oldest':
+          filtered.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
+          break;
+        case 'sort_order':
+        default:
+          filtered.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+          break;
+      }
+      
+      // Update download category menu
+      updateDownloadCategoryMenu();
       
       if (filtered.length === 0) {
         container.innerHTML = `
@@ -3589,6 +4158,212 @@
           toast.parentNode.removeChild(toast);
         }
       }, 3000);
+    }
+
+    // ===== FEATURE A: Ad Script Iframe Detection =====
+    function isIframeScript(code) {
+      if (!code) return false;
+      const lower = code.toLowerCase();
+      return lower.includes('<iframe') || lower.includes('document.write') || lower.includes('document.writeln');
+    }
+
+    // ===== FEATURE D: Preview Player Controls =====
+    function previewPlay() {
+      const video = document.getElementById('previewVideo');
+      if (video && video.src) {
+        video.play().catch(e => console.log('Play blocked', e));
+        document.getElementById('previewStatus').textContent = 'Playing';
+        document.getElementById('previewPlayBtn').innerHTML = '<i class="fas fa-pause"></i> Pause';
+        document.getElementById('previewPlayBtn').setAttribute('onclick', 'previewPause()');
+      }
+    }
+    function previewPause() {
+      const video = document.getElementById('previewVideo');
+      if (video) {
+        video.pause();
+        document.getElementById('previewStatus').textContent = 'Paused';
+        document.getElementById('previewPlayBtn').innerHTML = '<i class="fas fa-play"></i> Play';
+        document.getElementById('previewPlayBtn').setAttribute('onclick', 'previewPlay()');
+      }
+    }
+    function previewStop() {
+      const video = document.getElementById('previewVideo');
+      const iframe = document.getElementById('previewIframe');
+      if (video) { video.pause(); video.src = ''; }
+      if (iframe) { iframe.src = ''; iframe.style.display = 'none'; }
+      if (window._previewHls) { try { window._previewHls.destroy(); } catch(e) {} window._previewHls = null; }
+      document.getElementById('previewPlaceholder').style.display = 'flex';
+      document.getElementById('previewStatus').textContent = 'Stopped';
+      document.getElementById('previewPlayBtn').innerHTML = '<i class="fas fa-play"></i> Play';
+      document.getElementById('previewPlayBtn').setAttribute('onclick', 'previewPlay()');
+    }
+
+    // ===== FEATURE E: Channel Download System =====
+    function toggleDownloadMenu() {
+      const menu = document.getElementById('downloadMenu');
+      menu.classList.toggle('hidden');
+    }
+
+    function updateDownloadCategoryMenu() {
+      const menu = document.getElementById('downloadCategoryMenu');
+      if (!menu) return;
+      const categories = [...new Set(channels.map(c => c.category))].filter(Boolean).sort();
+      menu.innerHTML = categories.map(cat => `
+        <button onclick="downloadChannelsByCategory('${escapeHtml(cat)}')" class="w-full text-left px-4 py-2 text-xs text-aitv-muted hover:bg-white/5 hover:text-white transition flex items-center gap-2">
+          <i class="fas fa-folder text-aitv-neon-green"></i> ${escapeHtml(cat)}
+        </button>
+      `).join('');
+    }
+
+    function downloadAllChannels() {
+      downloadChannelsAsFile(channels, 'AllChannels');
+      document.getElementById('downloadMenu').classList.add('hidden');
+    }
+
+    function downloadChannelsByCategory(category) {
+      const filtered = channels.filter(c => c.category === category);
+      downloadChannelsAsFile(filtered, category);
+      document.getElementById('downloadMenu').classList.add('hidden');
+    }
+
+    function downloadChannelsAsFile(channelList, filename) {
+      if (!channelList || channelList.length === 0) {
+        showToast('No channels to download', 'error');
+        return;
+      }
+      const lines = channelList.map(ch => {
+        const name = (ch.channel_name || '').replace(/\|/g, '');
+        const url = (ch.stream_type === 'upload' ? '[uploaded]' : (ch.stream_url || '')).replace(/\|/g, '');
+        const type = (ch.stream_type || 'hls').replace(/\|/g, '');
+        const logo = (ch.logo_url || ch.logo_data ? ch.logo_url || '' : '').replace(/\|/g, '');
+        return name + '|' + url + '|' + type + '|' + logo;
+      });
+      const content = lines.join('\n');
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename.replace(/[^a-zA-Z0-9]/g, '_') + '.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Downloaded ' + channelList.length + ' channels as ' + a.download, 'success');
+    }
+
+    // Close download menu when clicking outside
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('downloadMenu');
+      if (menu && !menu.classList.contains('hidden') && !e.target.closest('#downloadMenu') && !e.target.closest('[onclick*="toggleDownloadMenu"]')) {
+        menu.classList.add('hidden');
+      }
+    });
+
+    // ===== FEATURE G: Visitor Logs =====
+    let visitorLogsInterval = null;
+
+    async function loadVisitorLogs() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('live_views')
+          .select('*')
+          .order('last_active', { ascending: false });
+
+        if (error) {
+          console.error('Error loading visitor logs:', error);
+          return;
+        }
+
+        renderVisitorLogs(data || []);
+      } catch (err) {
+        console.error('Visitor logs load error:', err);
+      }
+    }
+
+    function renderVisitorLogs(logs) {
+      const container = document.getElementById('visitorLogsList');
+      if (!container) return;
+
+      document.getElementById('visitorTotalCount').textContent = 'Total: ' + logs.length;
+
+      if (!logs.length) {
+        container.innerHTML = '<div class="text-center py-8 text-aitv-muted"><i class="fas fa-user-slash text-xl mb-2"></i><p class="text-sm">No visitor sessions found</p></div>';
+        return;
+      }
+
+      container.innerHTML = logs.map(log => {
+        const sid = log.session_id || '';
+        const truncatedSid = sid.length > 12 ? sid.substring(0, 12) + '...' : sid;
+        const lastActive = log.last_active ? new Date(log.last_active).toLocaleString() : 'Unknown';
+        const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
+        const isActive = log.last_active && new Date(log.last_active) > fiveMinAgo;
+
+        return `
+          <div class="flex items-center justify-between p-3 rounded-lg" style="background:#0f0f1a;border:1px solid #1a1a2e;">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background:${isActive ? 'rgba(0,243,255,0.1)' : 'rgba(255,255,255,0.05)'};border:1px solid ${isActive ? 'rgba(0,243,255,0.3)' : '#1a1a2e'}">
+                <i class="fas fa-user text-xs ${isActive ? 'text-aitv-neon-blue' : 'text-aitv-muted'}"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="text-xs font-mono text-white truncate" title="${escapeHtml(sid)}">${escapeHtml(truncatedSid)}</p>
+                <p class="text-[10px] text-aitv-muted">${lastActive}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <span class="${isActive ? 'badge badge-on' : 'badge badge-off'}" style="font-size:9px;">${isActive ? 'Active' : 'Offline'}</span>
+              <button onclick="deleteVisitorSession('${escapeHtml(sid)}')" class="btn-danger text-xs" style="padding:3px 8px;font-size:10px;">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function refreshVisitorLogs() {
+      showToast('Refreshing visitor logs...', 'info');
+      loadVisitorLogs();
+    }
+
+    async function deleteVisitorSession(sessionId) {
+      try {
+        const { error } = await supabaseClient
+          .from('live_views')
+          .delete()
+          .eq('session_id', sessionId);
+
+        if (error) throw error;
+        showToast('Session deleted', 'success');
+        await loadVisitorLogs();
+      } catch (err) {
+        showToast('Failed to delete session', 'error');
+      }
+    }
+
+    function confirmDeleteAllVisitors() {
+      openConfirmModal('Are you sure you want to delete ALL visitor sessions? This cannot be undone.', async () => {
+        try {
+          const { error } = await supabaseClient
+            .from('live_views')
+            .delete()
+            .neq('session_id', '');
+
+          if (error) throw error;
+          showToast('All visitor sessions deleted', 'success');
+          await loadVisitorLogs();
+        } catch (err) {
+          showToast('Failed to delete all sessions', 'error');
+        }
+      });
+    }
+
+    // Auto-refresh visitor logs every 30 seconds when section is visible
+    function startVisitorLogsAutoRefresh() {
+      if (visitorLogsInterval) clearInterval(visitorLogsInterval);
+      visitorLogsInterval = setInterval(() => {
+        if (currentSection === 'visitorlogs') {
+          loadVisitorLogs();
+        }
+      }, 30000);
     }
 
     // ===== UTILITY =====

@@ -1,0 +1,25 @@
+-- ============================================
+-- NEW SQL ADDITIONS ONLY (নতুন SQL - শুধু নতুন যোগ করা অংশ)
+-- আগের SQL ইতিমধ্যে ডাটাবেসে যোগ করা আছে
+-- ============================================
+
+-- ============================================
+-- ALTER TABLE: admin_ads - পপআপ ব্যানার বাটন টেক্সট কাস্টমাইজেশন
+-- ============================================
+ALTER TABLE admin_ads ADD COLUMN IF NOT EXISTS button_text TEXT DEFAULT 'Learn More';
+
+-- ============================================
+-- ALTER TABLE: match_schedules - কাস্টম ফ্ল্যাগ এবং লোগো সাপোর্ট
+-- ============================================
+ALTER TABLE match_schedules ADD COLUMN IF NOT EXISTS home_flag_url TEXT DEFAULT '';
+ALTER TABLE match_schedules ADD COLUMN IF NOT EXISTS away_flag_url TEXT DEFAULT '';
+ALTER TABLE match_schedules ADD COLUMN IF NOT EXISTS home_logo_url TEXT DEFAULT '';
+ALTER TABLE match_schedules ADD COLUMN IF NOT EXISTS away_logo_url TEXT DEFAULT '';
+
+-- ============================================
+-- ALTER TABLE: tv_channels - m3u_playlist স্ট্রিম টাইপ যোগ
+-- ============================================
+-- যদি আগের SQL এ m3u_playlist না থাকে তাহলে এই কমেন্ট খুলুন:
+-- ALTER TABLE tv_channels DROP CONSTRAINT IF EXISTS tv_channels_stream_type_check;
+-- ALTER TABLE tv_channels ADD CONSTRAINT tv_channels_stream_type_check
+--   CHECK (stream_type IN ('hls', 'iframe', 'dash', 'mp4', 'upload', 'm3u_playlist'));
