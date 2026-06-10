@@ -834,6 +834,9 @@ input,textarea{
 /* Feature 2: TV Mode sidebar z-index fix */
 .tv-mode .settings-sidebar.active { z-index: 10000; }
 .tv-mode .settings-overlay.active { z-index: 9999; }
+.tv-mode #playerPanel { z-index: 1 !important; }
+.tv-mode.menu-open #playerPanel { z-index: 1 !important; pointer-events: none !important; }
+.tv-mode.menu-open #playerWrapper { pointer-events: none !important; }
 
 /* TV Mode Floating Settings Button */
 .tv-mode-float-settings {
@@ -1007,7 +1010,91 @@ body.tv-mode .tv-mode-float-settings { display: flex; }
 .light-theme .menu-item { color: #334155; border-color: #f1f5f9; }
 .light-theme .menu-item:hover { background: #f0f9ff; }
 .light-theme .menu-item.active { color: #0ea5e9; background: #f0f9ff; }
-</style></meta></meta></meta></head><body class="flex flex-col min-h-[100svh]"><div class="maintenance-overlay" id="maintenanceOverlay"><i class="fas fa-tools"></i><h2>Under Maintenance</h2><p>We are performing scheduled maintenance. Please check back later.</p></div><header class="bg-black/90 backdrop-blur-md border-b border-white/10 sticky top-0 z-50 h-16 flex-shrink-0"><div class="container mx-auto px-4 h-full flex items-center justify-between"><div class="flex items-center gap-3"><i class="fas fa-tv text-cyan-400 text-xl"></i><h1 class="text-sm brand-font font-bold text-white tracking-wider">AI TV <span class="text-cyan-400">PRO</span></h1></div><div class="flex items-center gap-3"><button class="sm:hidden text-gray-400 hover:text-white transition" id="mobileSearchBtn"><i class="fas fa-search text-sm"></i></button><div class="relative hidden sm:block"><input class="bg-[#111] border border-white/10 rounded-full py-1.5 pl-8 pr-4 text-xs text-white focus:border-cyan-500/50 focus:outline-none w-32 focus:w-48 transition-all" id="searchInput" placeholder="Search..." type="text"/><i class="fas fa-search absolute left-3 top-2 text-gray-500"></i></div><div class="relative"><button class="flex items-center gap-2 bg-[#111] hover:bg-[#222] border border-white/10 px-3 py-1.5 rounded text-xs font-bold text-gray-300 transition" id="regionBtn"><i class="fas fa-globe text-pink-500"></i><span id="selectedRegion">Bangladesh</span><i class="fas fa-chevron-down text-[10px]"></i></button><div class="absolute right-0 top-full mt-2 w-64 bg-[#0a0a0a] border border-white/10 rounded shadow-2xl z-50 max-h-96 overflow-y-auto smooth-dropdown" id="regionDropdown"><div class="p-2 sticky top-0 bg-[#0a0a0a] border-b border-white/5 z-10"><input class="w-full bg-[#111] border border-white/5 rounded px-2 py-1 text-xs text-white focus:outline-none" id="regionSearch" placeholder="Filter..." type="text"/></div><div class="p-1" id="countryList"></div></div></div><button class="flex flex-col items-center justify-center gap-[3px] w-8 h-8 rounded hover:bg-white/10 transition cursor-pointer" id="settingsToggleBtn" title="Settings"><span class="block w-[18px] h-[2px] bg-gray-300 rounded transition-all"></span><span class="block w-[18px] h-[2px] bg-gray-300 rounded transition-all"></span><span class="block w-[18px] h-[2px] bg-gray-300 rounded transition-all"></span></button></div></div><div class="hidden sm:hidden bg-[#0a0a0a] border-b border-white/10 px-4 py-2" id="mobileSearchBar"><div class="relative"><input class="w-full bg-[#111] border border-white/10 rounded-full py-2 pl-9 pr-4 text-xs text-white focus:border-cyan-500/50 focus:outline-none" id="mobileSearchInput" placeholder="Search channels..." type="text"/><i class="fas fa-search absolute left-3 top-2.5 text-gray-500 text-xs"></i></div></div></header><div class="settings-overlay" id="settingsOverlay"></div><div class="settings-sidebar" id="settingsSidebar"><div class="sidebar-header"><div class="flex items-center gap-3"><i class="fas fa-cog text-cyan-400 text-lg"></i><h2 class="brand-font text-sm font-bold text-white tracking-wider">SETTINGS</h2></div><button class="text-gray-400 hover:text-white transition text-lg" id="closeSettingsBtn"><i class="fas fa-times"></i></button></div><div class="sidebar-body"><div class="sidebar-section"><div class="sidebar-section-title"><i class="fas fa-bolt"></i> Quick Categories</div><div id="adminCategoryButtons"></div></div><div class="sidebar-section"><div class="sidebar-section-title"><i class="fas fa-tv"></i> TV Mode</div><div class="tv-toggle-row" id="tvModeToggleRow" tabindex="0"><div class="toggle-label"><i class="fas fa-tv text-cyan-400"></i> <span>TV Screen Mode</span></div><div class="tv-toggle-switch"><input id="tvModeCheckbox" type="checkbox"/><span class="tv-toggle-slider"></span></div></div><p class="text-[10px] text-gray-600 mt-2">Turn on to use split layout (Channels left, Player right). Auto-enabled on TV devices.</p><button class="quick-cat-btn" id="favFilterBtn" tabindex="0"><i class="fas fa-heart text-red-400"></i> Favorites</button><div class="tv-toggle-row" id="themeToggleRow" tabindex="0" onclick="toggleTheme()"><div class="toggle-label"><i class="fas fa-sun text-yellow-400"></i> <span>Light Theme</span></div><div class="tv-toggle-switch"><input id="themeCheckbox" type="checkbox"/><span class="tv-toggle-slider"></span></div></div><div class="tv-toggle-row" id="bfModeToggleRow" tabindex="0"><div class="toggle-label"><i class="fas fa-bolt text-green-400"></i> <span>Buffering-Free</span></div><div class="tv-toggle-switch"><input id="bfModeCheckbox" type="checkbox"/><span class="tv-toggle-slider"></span></div></div></div><div class="sidebar-section"><div class="sidebar-section-title"><i class="fas fa-link"></i> Custom M3U Playlist</div><div class="m3u-input-group"><input id="customM3uInput" placeholder="Paste M3U URL here..." tabindex="0" type="text"/><button id="loadM3uBtn" tabindex="0">Load</button></div><div style="margin-top:8px;"><input type="file" id="localM3uFile" accept=".m3u,.m3u8,.txt" style="display:none"/><button class="quick-cat-btn" id="localM3uBtn" tabindex="0" style="width:100%;margin:0;"><i class="fas fa-upload text-cyan-400"></i> Upload Local M3U File</button></div><p class="text-[10px] text-gray-600 mb-3">Paste any M3U/M3U8 playlist URL to load channels.</p><div class="sidebar-section-title" style="margin-top:8px"><i class="fas fa-history"></i> History</div><div id="m3uHistoryList"><p class="text-[10px] text-gray-600 italic">No history yet.</p></div></div><div class="sidebar-section"><div class="sidebar-section-title"><i class="fas fa-download"></i> Download Our App</div><a class="playstore-btn" href="https://ai-multitool.netlify.app/aitools/app-store" rel="noopener" tabindex="0" target="_blank"><img alt="Get it on Google Play" src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" style="height:32px;width:auto;object-fit:contain;"/><div class="ps-text"><small>GET IT ON</small><span>Google Play</span></div></a></div><div class="sidebar-section"><div class="sidebar-section-title"><i class="fas fa-headset"></i> Any Problem? Contact Dev</div><div class="tg-input-wrapper"><i class="fab fa-telegram" style="color:#229ED9;font-size:18px;flex-shrink:0"></i><input id="problemInput" placeholder="Type your message..." tabindex="0" type="text"/><button class="tg-input-send" id="sendProblemBtn" tabindex="0" title="Send"><i class="fas fa-paper-plane" style="font-size:14px"></i></button></div><p class="text-[10px] text-gray-600 mt-2">Your message will be sent to the developer via Telegram.</p></div></div></div><div class="worldcup-overlay" id="worldcupOverlay"></div><div class="worldcup-modal" id="worldcupModal"><div class="modal-header"><div class="flex items-center gap-3"><i class="fas fa-trophy text-yellow-400 text-lg"></i><h2 class="brand-font text-sm font-bold text-white tracking-wider">WORLD CUP</h2></div><button class="text-gray-400 hover:text-white transition text-lg" id="closeWorldcupBtn"><i class="fas fa-times"></i></button></div><div class="modal-body" id="worldcupBody"><div class="flex flex-col items-center justify-center py-8" id="wcLoader"><svg height="30" style="animation:channelSvgSpin 1.2s linear infinite" viewbox="0 0 50 50" width="30" xmlns="http://www.w3.org/2000/svg"><circle cx="25" cy="25" fill="none" r="20" stroke="#ffaa00" stroke-dasharray="31.4 31.4" stroke-linecap="round" stroke-width="3"></circle></svg><span class="text-[10px] text-gray-500 mt-2">Loading schedule...</span></div><div id="wcMatches"></div><div class="mt-4" id="wcAdBanner"></div><div class="hidden flex flex-col items-center justify-center py-8 opacity-40" id="wcEmptyState"><i class="fas fa-trophy text-4xl mb-3 text-gray-600"></i><p class="text-xs text-gray-500">No matches scheduled right now.</p></div></div></div><div class="popup-ad-overlay" id="popupAdOverlay"><div class="popup-ad-card" id="popupAdCard"><span class="popup-ad-sponsored">Sponsored</span><button class="popup-ad-close" id="popupAdClose"><i class="fas fa-times"></i></button><img alt="Ad" id="popupAdImg" src=""/><div class="popup-ad-body"><div class="popup-ad-title" id="popupAdTitle"></div><div class="popup-ad-desc" id="popupAdDesc"></div><a class="popup-ad-btn" href="#" id="popupAdBtn" rel="noopener" target="_blank">Learn More</a></div></div></div><div class="refresh-modal-overlay" id="refreshOverlay"></div><div class="refresh-modal" id="refreshModal"><div class="modal-header"><div class="flex items-center gap-3"><i class="fas fa-sync-alt text-cyan-400"></i><h2 class="brand-font text-sm font-bold text-white tracking-wider">REFRESH / CLEAR DATA</h2></div><button class="text-gray-400 hover:text-white transition text-lg" id="closeRefreshBtn"><i class="fas fa-times"></i></button></div><div class="modal-body" style="padding:20px;"><p class="text-xs text-gray-400 mb-4">Choose an option below:</p><button id="cleanDataBtn" tabindex="0" style="background:linear-gradient(135deg,#ff0055,#cc0044);color:#fff;">Clean All Data &amp; Refresh</button><button id="normalRefreshBtn" tabindex="0" style="background:linear-gradient(135deg,rgba(0,243,255,0.2),rgba(0,243,255,0.1));color:var(--neon-blue);border:1px solid rgba(0,243,255,0.3);">Normal Refresh</button><button id="cancelRefreshBtn" tabindex="0" style="background:rgba(255,255,255,0.05);color:#888;border:1px solid rgba(255,255,255,0.1);">Cancel</button></div></div><!-- Disclaimer/DMCA Modal -->
+/* ===== COMPREHENSIVE WHITE MODE TEXT & UI FIXES ===== */
+.light-theme { color: #1e293b; }
+.light-theme h1, .light-theme h2, .light-theme h3, .light-theme h4, .light-theme h5, .light-theme h6 { color: #1e293b !important; }
+.light-theme p, .light-theme span, .light-theme label, .light-theme a, .light-theme li, .light-theme td, .light-theme th { color: #334155; }
+.light-theme .text-white { color: #1e293b !important; }
+.light-theme .text-gray-400 { color: #64748b !important; }
+.light-theme .text-gray-500 { color: #94a3b8 !important; }
+.light-theme .text-gray-600 { color: #94a3b8 !important; }
+.light-theme .text-gray-300 { color: #475569 !important; }
+.light-theme .text-cyan-400 { color: #0ea5e9 !important; }
+.light-theme .text-cyan-500 { color: #0284c7 !important; }
+.light-theme .text-pink-500 { color: #e11d48 !important; }
+.light-theme .text-red-400 { color: #f43f5e !important; }
+.light-theme .text-red-500 { color: #ef4444 !important; }
+.light-theme .text-green-400 { color: #22c55e !important; }
+.light-theme .text-yellow-400 { color: #f59e0b !important; }
+.light-theme .text-yellow-500 { color: #eab308 !important; }
+/* Header */
+.light-theme header { background: rgba(255,255,255,0.97) !important; border-color: #e2e8f0 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important; }
+.light-theme header h1 { color: #1e293b !important; }
+.light-theme header h1 span { color: #0ea5e9 !important; }
+.light-theme #mobileSearchBar { background: #fff !important; border-color: #e2e8f0 !important; }
+/* Region Dropdown */
+.light-theme #regionDropdown { background: #fff !important; border-color: #e2e8f0 !important; box-shadow: 0 8px 32px rgba(0,0,0,0.1) !important; }
+.light-theme #regionDropdown .p-2.sticky { background: #fff !important; border-color: #e2e8f0 !important; }
+.light-theme #regionSearch { background: #f8fafc !important; border-color: #e2e8f0 !important; color: #1e293b !important; }
+.light-theme #countryList div { color: #334155 !important; }
+.light-theme #countryList div:hover { background: #f0f9ff !important; color: #0284c7 !important; }
+/* Footer */
+.light-theme #footerWrapper { background: #fff !important; border-color: #e2e8f0 !important; }
+.light-theme #footerWrapper .bg-black { background: #fff !important; }
+.light-theme #footerWrapper footer { background: #fff !important; }
+.light-theme #footerWrapper button { background: #f8fafc !important; border-color: #e2e8f0 !important; color: #475569 !important; }
+.light-theme #footerWrapper button:hover { color: #0284c7 !important; border-color: #0ea5e9 !important; }
+.light-theme #footerWrapper p { color: #94a3b8 !important; }
+.light-theme #footerWrapper .border-white\/5 { border-color: #e2e8f0 !important; }
+.light-theme #footerWrapper .border-white\/10 { border-color: #e2e8f0 !important; }
+.light-theme #footerWrapper .bg-\[\#111\] { background: #f8fafc !important; }
+/* Settings sidebar header text */
+.light-theme .sidebar-header h2 { color: #1e293b !important; }
+.light-theme .sidebar-header .text-gray-400 { color: #64748b !important; }
+.light-theme .sidebar-header .text-white { color: #1e293b !important; }
+/* Settings sidebar body text */
+.light-theme .sidebar-body p { color: #64748b !important; }
+.light-theme .sidebar-body span { color: #334155 !important; }
+/* Modals */
+.light-theme .worldcup-modal h2 { color: #1e293b !important; }
+.light-theme .refresh-modal h2 { color: #1e293b !important; }
+.light-theme .disclaimer-modal h2 { color: #1e293b !important; }
+.light-theme .worldcup-modal .text-gray-400 { color: #64748b !important; }
+.light-theme .refresh-modal .text-gray-400 { color: #64748b !important; }
+.light-theme #disclaimerModal h2 { color: #1e293b !important; }
+.light-theme #disclaimerModal p { color: #475569 !important; }
+.light-theme #disclaimerModal strong.text-white { color: #1e293b !important; }
+.light-theme #disclaimerModal strong.text-cyan-400 { color: #0ea5e9 !important; }
+/* Category buttons */
+.light-theme .cat-btn { color: #475569 !important; background: #f8fafc !important; border-color: #e2e8f0 !important; }
+.light-theme .cat-btn.active { background: #f0f9ff !important; border-color: #0ea5e9 !important; color: #0284c7 !important; }
+/* Player controls overlay text */
+.light-theme #controlsOverlay span { color: #1e293b !important; }
+.light-theme #controlsOverlay .text-gray-400 { color: #64748b !important; }
+.light-theme #controlsOverlay .text-gray-300 { color: #475569 !important; }
+/* Playstore button text */
+.light-theme .playstore-btn .ps-text span { color: #1e293b !important; }
+.light-theme .playstore-btn .ps-text small { color: #94a3b8 !important; }
+/* TV Mode Float Settings */
+.light-theme .tv-mode-float-settings { background: rgba(255,255,255,0.9); border-color: rgba(14,165,233,0.4); color: #0ea5e9; }
+.light-theme .tv-mode-float-settings:hover { background: rgba(14,165,233,0.15); border-color: #0ea5e9; box-shadow: 0 0 12px rgba(14,165,233,0.3); }
+/* Settings Toggle (hamburger) */
+.light-theme #settingsToggleBtn span { background: #475569 !important; }
+.light-theme #settingsToggleBtn:hover span { background: #0ea5e9 !important; }
+/* Bottom sheet text */
+.light-theme .bottom-sheet p { color: #64748b !important; }
+.light-theme .bottom-sheet button { color: #64748b !important; }
+/* Scrollbar in light theme */
+.light-theme ::-webkit-scrollbar-track { background: #f1f5f9; }
+.light-theme ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.light-theme ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+/* Close button in sidebar for light mode */
+.light-theme #closeSettingsBtn { color: #64748b !important; }
+.light-theme #closeSettingsBtn:hover { color: #e11d48 !important; }
+/* Quality menu text in light theme */
+.light-theme .settings-menu .menu-item { color: #334155 !important; }
+.light-theme #qualityMenu p, .light-theme #qualityMenu div { color: #334155 !important; }
+</style></meta></meta></meta></head><body class="flex flex-col min-h-[100svh]"><div class="maintenance-overlay" id="maintenanceOverlay"><i class="fas fa-tools"></i><h2>Under Maintenance</h2><p>We are performing scheduled maintenance. Please check back later.</p></div><header class="bg-black/90 backdrop-blur-md border-b border-white/10 sticky top-0 z-50 h-16 flex-shrink-0"><div class="container mx-auto px-4 h-full flex items-center justify-between"><div class="flex items-center gap-3"><i class="fas fa-tv text-cyan-400 text-xl"></i><h1 class="text-sm brand-font font-bold text-white tracking-wider">AI TV <span class="text-cyan-400">PRO</span></h1></div><div class="flex items-center gap-3"><button class="sm:hidden text-gray-400 hover:text-white transition" id="mobileSearchBtn"><i class="fas fa-search text-sm"></i></button><div class="relative hidden sm:block"><input class="bg-[#111] border border-white/10 rounded-full py-1.5 pl-8 pr-4 text-xs text-white focus:border-cyan-500/50 focus:outline-none w-32 focus:w-48 transition-all" id="searchInput" placeholder="Search..." type="text"/><i class="fas fa-search absolute left-3 top-2 text-gray-500"></i></div><div class="relative"><button class="flex items-center gap-2 bg-[#111] hover:bg-[#222] border border-white/10 px-3 py-1.5 rounded text-xs font-bold text-gray-300 transition" id="regionBtn"><i class="fas fa-globe text-pink-500"></i><span id="selectedRegion">Bangladesh</span><i class="fas fa-chevron-down text-[10px]"></i></button><div class="absolute right-0 top-full mt-2 w-64 bg-[#0a0a0a] border border-white/10 rounded shadow-2xl z-50 max-h-96 overflow-y-auto smooth-dropdown" id="regionDropdown"><div class="p-2 sticky top-0 bg-[#0a0a0a] border-b border-white/5 z-10"><input class="w-full bg-[#111] border border-white/5 rounded px-2 py-1 text-xs text-white focus:outline-none" id="regionSearch" placeholder="Filter..." type="text"/></div><div class="p-1" id="countryList"></div></div></div><button class="flex flex-col items-center justify-center gap-[3px] w-8 h-8 rounded hover:bg-white/10 transition cursor-pointer" id="settingsToggleBtn" title="Settings"><span class="block w-[18px] h-[2px] bg-gray-300 rounded transition-all"></span><span class="block w-[18px] h-[2px] bg-gray-300 rounded transition-all"></span><span class="block w-[18px] h-[2px] bg-gray-300 rounded transition-all"></span></button></div></div><div class="hidden sm:hidden bg-[#0a0a0a] border-b border-white/10 px-4 py-2" id="mobileSearchBar"><div class="relative"><input class="w-full bg-[#111] border border-white/10 rounded-full py-2 pl-9 pr-4 text-xs text-white focus:border-cyan-500/50 focus:outline-none" id="mobileSearchInput" placeholder="Search channels..." type="text"/><i class="fas fa-search absolute left-3 top-2.5 text-gray-500 text-xs"></i></div></div></header><div class="settings-overlay" id="settingsOverlay"></div><div class="settings-sidebar" id="settingsSidebar"><div class="sidebar-header"><div class="flex items-center gap-3"><i class="fas fa-cog text-cyan-400 text-lg"></i><h2 class="brand-font text-sm font-bold text-white tracking-wider">SETTINGS</h2></div><button class="text-gray-400 hover:text-white transition text-lg" id="closeSettingsBtn" onclick="if(typeof closeSettings==='function')closeSettings()"><i class="fas fa-times"></i></button></div><div class="sidebar-body"><div class="sidebar-section"><div class="sidebar-section-title"><i class="fas fa-bolt"></i> Quick Categories</div><div id="adminCategoryButtons"></div></div><div class="sidebar-section"><div class="sidebar-section-title"><i class="fas fa-tv"></i> TV Mode</div><div class="tv-toggle-row" id="tvModeToggleRow" tabindex="0"><div class="toggle-label"><i class="fas fa-tv text-cyan-400"></i> <span>TV Screen Mode</span></div><div class="tv-toggle-switch"><input id="tvModeCheckbox" type="checkbox"/><span class="tv-toggle-slider"></span></div></div><p class="text-[10px] text-gray-600 mt-2">Turn on to use split layout (Channels left, Player right). Auto-enabled on TV devices.</p><button class="quick-cat-btn" id="favFilterBtn" tabindex="0"><i class="fas fa-heart text-red-400"></i> Favorites</button><div class="tv-toggle-row" id="themeToggleRow" tabindex="0" onclick="toggleTheme()"><div class="toggle-label"><i class="fas fa-sun text-yellow-400"></i> <span>Light Theme</span></div><div class="tv-toggle-switch"><input id="themeCheckbox" type="checkbox"/><span class="tv-toggle-slider"></span></div></div><div class="tv-toggle-row" id="bfModeToggleRow" tabindex="0"><div class="toggle-label"><i class="fas fa-bolt text-green-400"></i> <span>Buffering-Free</span></div><div class="tv-toggle-switch"><input id="bfModeCheckbox" type="checkbox"/><span class="tv-toggle-slider"></span></div></div></div><div class="sidebar-section"><div class="sidebar-section-title"><i class="fas fa-link"></i> Custom M3U Playlist</div><div class="m3u-input-group"><input id="customM3uInput" placeholder="Paste M3U URL here..." tabindex="0" type="text"/><button id="loadM3uBtn" tabindex="0">Load</button></div><div style="margin-top:8px;"><input type="file" id="localM3uFile" accept=".m3u,.m3u8,.txt" style="display:none"/><button class="quick-cat-btn" id="localM3uBtn" tabindex="0" style="width:100%;margin:0;"><i class="fas fa-upload text-cyan-400"></i> Upload Local M3U File</button></div><p class="text-[10px] text-gray-600 mb-3">Paste any M3U/M3U8 playlist URL to load channels.</p><div class="sidebar-section-title" style="margin-top:8px"><i class="fas fa-history"></i> History</div><div id="m3uHistoryList"><p class="text-[10px] text-gray-600 italic">No history yet.</p></div></div><div class="sidebar-section"><div class="sidebar-section-title"><i class="fas fa-download"></i> Download Our App</div><a class="playstore-btn" href="https://ai-multitool.netlify.app/aitools/app-store" rel="noopener" tabindex="0" target="_blank"><img alt="Get it on Google Play" src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" style="height:32px;width:auto;object-fit:contain;"/><div class="ps-text"><small>GET IT ON</small><span>Google Play</span></div></a></div><div class="sidebar-section"><div class="sidebar-section-title"><i class="fas fa-headset"></i> Any Problem? Contact Dev</div><div class="tg-input-wrapper"><i class="fab fa-telegram" style="color:#229ED9;font-size:18px;flex-shrink:0"></i><input id="problemInput" placeholder="Type your message..." tabindex="0" type="text"/><button class="tg-input-send" id="sendProblemBtn" tabindex="0" title="Send"><i class="fas fa-paper-plane" style="font-size:14px"></i></button></div><p class="text-[10px] text-gray-600 mt-2">Your message will be sent to the developer via Telegram.</p></div></div></div><div class="worldcup-overlay" id="worldcupOverlay"></div><div class="worldcup-modal" id="worldcupModal"><div class="modal-header"><div class="flex items-center gap-3"><i class="fas fa-trophy text-yellow-400 text-lg"></i><h2 class="brand-font text-sm font-bold text-white tracking-wider">WORLD CUP</h2></div><button class="text-gray-400 hover:text-white transition text-lg" id="closeWorldcupBtn"><i class="fas fa-times"></i></button></div><div class="modal-body" id="worldcupBody"><div class="flex flex-col items-center justify-center py-8" id="wcLoader"><svg height="30" style="animation:channelSvgSpin 1.2s linear infinite" viewbox="0 0 50 50" width="30" xmlns="http://www.w3.org/2000/svg"><circle cx="25" cy="25" fill="none" r="20" stroke="#ffaa00" stroke-dasharray="31.4 31.4" stroke-linecap="round" stroke-width="3"></circle></svg><span class="text-[10px] text-gray-500 mt-2">Loading schedule...</span></div><div id="wcMatches"></div><div class="mt-4" id="wcAdBanner"></div><div class="hidden flex flex-col items-center justify-center py-8 opacity-40" id="wcEmptyState"><i class="fas fa-trophy text-4xl mb-3 text-gray-600"></i><p class="text-xs text-gray-500">No matches scheduled right now.</p></div></div></div><div class="popup-ad-overlay" id="popupAdOverlay"><div class="popup-ad-card" id="popupAdCard"><span class="popup-ad-sponsored">Sponsored</span><button class="popup-ad-close" id="popupAdClose"><i class="fas fa-times"></i></button><img alt="Ad" id="popupAdImg" src=""/><div class="popup-ad-body"><div class="popup-ad-title" id="popupAdTitle"></div><div class="popup-ad-desc" id="popupAdDesc"></div><a class="popup-ad-btn" href="#" id="popupAdBtn" rel="noopener" target="_blank">Learn More</a></div></div></div><div class="refresh-modal-overlay" id="refreshOverlay"></div><div class="refresh-modal" id="refreshModal"><div class="modal-header"><div class="flex items-center gap-3"><i class="fas fa-sync-alt text-cyan-400"></i><h2 class="brand-font text-sm font-bold text-white tracking-wider">REFRESH / CLEAR DATA</h2></div><button class="text-gray-400 hover:text-white transition text-lg" id="closeRefreshBtn"><i class="fas fa-times"></i></button></div><div class="modal-body" style="padding:20px;"><p class="text-xs text-gray-400 mb-4">Choose an option below:</p><button id="cleanDataBtn" tabindex="0" style="background:linear-gradient(135deg,#ff0055,#cc0044);color:#fff;">Clean All Data &amp; Refresh</button><button id="normalRefreshBtn" tabindex="0" style="background:linear-gradient(135deg,rgba(0,243,255,0.2),rgba(0,243,255,0.1));color:var(--neon-blue);border:1px solid rgba(0,243,255,0.3);">Normal Refresh</button><button id="cancelRefreshBtn" tabindex="0" style="background:rgba(255,255,255,0.05);color:#888;border:1px solid rgba(255,255,255,0.1);">Cancel</button></div></div><!-- Disclaimer/DMCA Modal -->
 <div class="refresh-modal-overlay" id="disclaimerOverlay"></div>
 <div class="refresh-modal" id="disclaimerModal" style="max-width: 450px;">
   <div class="modal-header">
@@ -2997,11 +3084,17 @@ function openSettings(){
  settingsSidebar.classList.add("active");
  settingsOverlay.classList.add("active");
  document.body.classList.add("menu-open"); 
+ // Hide floating button when sidebar opens
+ if(tvModeFloatSettings) tvModeFloatSettings.style.display = "none";
 }
 function closeSettings(){
  settingsSidebar.classList.remove("active");
  settingsOverlay.classList.remove("active");
  document.body.classList.remove("menu-open"); 
+ // Show floating button when sidebar closes (only in TV mode)
+ if(tvModeFloatSettings && document.body.classList.contains("tv-mode")){
+  tvModeFloatSettings.style.display = "flex";
+ }
 }
 settingsToggleBtn.addEventListener("click",openSettings);
 closeSettingsBtn.addEventListener("click",closeSettings);
@@ -3026,6 +3119,32 @@ if(tvModeFloatSettings){
  });
  settingsObserver.observe(settingsSidebar, { attributes: true, attributeFilter: ["class"] });
 }
+
+// Escape key to close settings/sidebar in TV mode
+document.addEventListener("keydown", function(e) {
+ if(e.key === "Escape") {
+  if(settingsSidebar.classList.contains("active")){
+   closeSettings();
+  }
+  if(worldcupModal.classList.contains("active")){
+   closeWorldcup();
+  }
+  if(document.getElementById("refreshModal").classList.contains("active")){
+   document.getElementById("refreshModal").classList.remove("active");
+   document.getElementById("refreshOverlay").classList.remove("active");
+   document.body.classList.remove("menu-open");
+  }
+  if(document.getElementById("disclaimerModal").classList.contains("active")){
+   document.getElementById("disclaimerModal").classList.remove("active");
+   document.getElementById("disclaimerOverlay").classList.remove("active");
+   document.body.classList.remove("menu-open");
+  }
+  // Close region dropdown
+  if(regionDropdown && regionDropdown.classList.contains("active")){
+   regionDropdown.classList.remove("active");
+  }
+ }
+});
 
 // TV Mode Toggle
 const tvModeCheckbox=document.getElementById("tvModeCheckbox");
