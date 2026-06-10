@@ -1,0 +1,222 @@
+-- ============================================
+-- Table 1: admin_settings (এডমিন কন্ট্রোল সেটিংস)
+-- ============================================
+CREATE TABLE IF NOT EXISTS admin_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+INSERT INTO admin_settings (key, value) VALUES
+    ('maintenance_mode', 'false'),
+    ('maintenance_message', 'We are performing scheduled maintenance. Please check back soon.'),
+    ('ads_enabled', 'true'),
+    ('popup_ads_enabled', 'true'),
+    ('admin_allowed_emails', 'your-email@gmail.com')
+ON CONFLICT (key) DO NOTHING;
+
+-- ============================================
+-- Table 2: admin_ads (এড ম্যানেজমেন্ট)
+-- ============================================
+CREATE TABLE IF NOT EXISTS admin_ads (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    type TEXT NOT NULL CHECK (type IN ('inline', 'popup')),
+    title TEXT NOT NULL,
+    description TEXT DEFAULT '',
+    image_url TEXT DEFAULT '',
+    link_url TEXT DEFAULT '',
+    position INTEGER DEFAULT 0,
+    countdown INTEGER DEFAULT 5,
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- Table 3: live_views (রিয়েল-টাইম ভিউ কাউন্ট / আই ইন্ডিকেটর)
+-- ============================================
+CREATE TABLE IF NOT EXISTS live_views (
+    session_id TEXT PRIMARY KEY,
+    last_active TIMESTAMPTZ NOT NULL
+);
+
+-- ============================================
+-- RLS: admin_settings (সবাই পড়তে পারবে, শুধু authenticated লিখতে পারবে)
+-- ============================================
+ALTER TABLE admin_settings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public read on admin_settings" ON admin_settings;
+DROP POLICY IF EXISTS "Allow public write on admin_settings" ON admin_settings;
+DROP POLICY IF EXISTS "Allow public update on admin_settings" ON admin_settings;
+DROP POLICY IF EXISTS "Only authenticated can write admin_settings" ON admin_settings;
+DROP POLICY IF EXISTS "Only authenticated can update admin_settings" ON admin_settings;
+
+CREATE POLICY "Public read admin_settings"
+  ON admin_settings FOR SELECT USING (true);
+
+CREATE POLICY "Auth write admin_settings"
+  ON admin_settings FOR INSERT
+  TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Auth update admin_settings"
+  ON admin_settings FOR UPDATE
+  TO authenticated USING (true);
+
+-- ============================================
+-- RLS: admin_ads (সবাই পড়তে পারবে, শুধু authenticated লিখতে/মুছতে পারবে)
+-- ============================================
+ALTER TABLE admin_ads ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public read on admin_ads" ON admin_ads;
+DROP POLICY IF EXISTS "Allow public write on admin_ads" ON admin_ads;
+DROP POLICY IF EXISTS "Allow public update on admin_ads" ON admin_ads;
+DROP POLICY IF EXISTS "Allow public delete on admin_ads" ON admin_ads;
+DROP POLICY IF EXISTS "Only authenticated can write admin_ads" ON admin_ads;
+DROP POLICY IF EXISTS "Only authenticated can update admin_ads" ON admin_ads;
+DROP POLICY IF EXISTS "Only authenticated can delete admin_ads" ON admin_ads;
+
+CREATE POLICY "Public read admin_ads"
+  ON admin_ads FOR SELECT USING (true);
+
+CREATE POLICY "Auth write admin_ads"
+  ON admin_ads FOR INSERT
+  TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Auth update admin_ads"
+  ON admin_ads FOR UPDATE
+  TO authenticated USING (true);
+
+CREATE POLICY "Auth delete admin_ads"
+  ON admin_ads FOR DELETE
+  TO authenticated USING (true);
+
+-- ============================================
+-- RLS: live_views (সবাই সব করতে পারবে - এটা পাবলিক ট্র্যাকিং)
+-- ============================================
+ALTER TABLE live_views ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public read on live_views" ON live_views;
+DROP POLICY IF EXISTS "Allow public insert on live_views" ON live_views;
+DROP POLICY IF EXISTS "Allow public update on live_views" ON live_views;
+DROP POLICY IF EXISTS "Allow public delete on live_views" ON live_views;
+
+CREATE POLICY "Public all live_views"
+  ON live_views FOR ALL USING (true) WITH CHECK (true);
+
+-- ============================================
+-- Table 4: match_schedules (ম্যাচ শিডিউল)
+-- ============================================
+CREATE TABLE IF NOT EXISTS match_schedules (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    team_home TEXT NOT NULL,
+    team_away TEXT NOT NULL,
+    match_date DATE NOT NULL,
+    match_time TEXT NOT NULL,
+    tv_channel TEXT DEFAULT '',
+    stage TEXT DEFAULT '',
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- Table 5: admin_ad_scripts (এড স্ক্রিপ্ট - Adsterra/Monetag/PropellerAds)
+-- ============================================
+CREATE TABLE IF NOT EXISTS admin_ad_scripts (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    name TEXT NOT NULL,
+    platform TEXT NOT NULL CHECK (platform IN ('adsterra', 'monetag', 'propellerads', 'custom')),
+    script_code TEXT NOT NULL,
+    position TEXT NOT NULL DEFAULT 'both' CHECK (position IN ('menu', 'worldcup', 'both')),
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- RLS: match_schedules (public read, auth write/update/delete)
+-- ============================================
+ALTER TABLE match_schedules ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read match_schedules" ON match_schedules;
+CREATE POLICY "Public read match_schedules"
+  ON match_schedules FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Auth write match_schedules" ON match_schedules;
+CREATE POLICY "Auth write match_schedules"
+  ON match_schedules FOR INSERT
+  TO authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Auth update match_schedules" ON match_schedules;
+CREATE POLICY "Auth update match_schedules"
+  ON match_schedules FOR UPDATE
+  TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "Auth delete match_schedules" ON match_schedules;
+CREATE POLICY "Auth delete match_schedules"
+  ON match_schedules FOR DELETE
+  TO authenticated USING (true);
+
+-- ============================================
+-- RLS: admin_ad_scripts (public read, auth write/update/delete)
+-- ============================================
+ALTER TABLE admin_ad_scripts ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read admin_ad_scripts" ON admin_ad_scripts;
+CREATE POLICY "Public read admin_ad_scripts"
+  ON admin_ad_scripts FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Auth write admin_ad_scripts" ON admin_ad_scripts;
+CREATE POLICY "Auth write admin_ad_scripts"
+  ON admin_ad_scripts FOR INSERT
+  TO authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Auth update admin_ad_scripts" ON admin_ad_scripts;
+CREATE POLICY "Auth update admin_ad_scripts"
+  ON admin_ad_scripts FOR UPDATE
+  TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "Auth delete admin_ad_scripts" ON admin_ad_scripts;
+CREATE POLICY "Auth delete admin_ad_scripts"
+  ON admin_ad_scripts FOR DELETE
+  TO authenticated USING (true);
+
+-- ============================================
+-- Table 6: tv_channels (টিভি চ্যানেল ম্যানেজমেন্ট)
+-- ============================================
+CREATE TABLE IF NOT EXISTS tv_channels (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    category TEXT NOT NULL DEFAULT 'Default',
+    channel_name TEXT NOT NULL,
+    stream_url TEXT DEFAULT '',
+    stream_type TEXT NOT NULL DEFAULT 'hls' CHECK (stream_type IN ('hls', 'iframe', 'dash', 'mp4', 'upload')),
+    logo_url TEXT DEFAULT '',
+    logo_data TEXT DEFAULT '',
+    media_data TEXT DEFAULT '',
+    media_mime TEXT DEFAULT '',
+    media_filename TEXT DEFAULT '',
+    is_visible BOOLEAN DEFAULT true,
+    sort_order INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- RLS: tv_channels (public read, auth write/update/delete)
+-- ============================================
+ALTER TABLE tv_channels ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read tv_channels" ON tv_channels;
+CREATE POLICY "Public read tv_channels"
+  ON tv_channels FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Auth insert tv_channels" ON tv_channels;
+CREATE POLICY "Auth insert tv_channels"
+  ON tv_channels FOR INSERT
+  TO authenticated WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Auth update tv_channels" ON tv_channels;
+CREATE POLICY "Auth update tv_channels"
+  ON tv_channels FOR UPDATE
+  TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "Auth delete tv_channels" ON tv_channels;
+CREATE POLICY "Auth delete tv_channels"
+  ON tv_channels FOR DELETE
+  TO authenticated USING (true);

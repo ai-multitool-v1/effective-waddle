@@ -1,0 +1,3618 @@
+<!--
+  ============================================
+  AI TV Pro - Admin Panel (Google OAuth)
+  ============================================
+
+  SUPABASE SETUP - Run this in your Supabase SQL Editor:
+
+  -- ============================================
+  -- Table 1: admin_settings
+  -- ============================================
+  CREATE TABLE IF NOT EXISTS admin_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  INSERT INTO admin_settings (key, value) VALUES
+    ('maintenance_mode', 'false'),
+    ('maintenance_message', 'We are performing scheduled maintenance. Please check back soon.'),
+    ('ads_enabled', 'true'),
+    ('popup_ads_enabled', 'true'),
+    ('admin_allowed_emails', 'your-email@gmail.com')
+  ON CONFLICT (key) DO NOTHING;
+
+  -- ============================================
+  -- Table 2: admin_ads
+  -- ============================================
+  CREATE TABLE IF NOT EXISTS admin_ads (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    type TEXT NOT NULL CHECK (type IN ('inline', 'popup')),
+    title TEXT NOT NULL,
+    description TEXT DEFAULT '',
+    image_url TEXT DEFAULT '',
+    link_url TEXT DEFAULT '',
+    position INTEGER DEFAULT 0,
+    countdown INTEGER DEFAULT 5,
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  -- ============================================
+  -- Table 3: live_views
+  -- ============================================
+  CREATE TABLE IF NOT EXISTS live_views (
+    session_id TEXT PRIMARY KEY,
+    last_active TIMESTAMPTZ NOT NULL
+  );
+
+  -- ============================================
+  -- Table 4: match_schedules (NEW)
+  -- ============================================
+  CREATE TABLE IF NOT EXISTS match_schedules (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    team_home TEXT NOT NULL,
+    team_away TEXT NOT NULL,
+    match_date DATE NOT NULL,
+    match_time TEXT NOT NULL,
+    tv_channel TEXT DEFAULT '',
+    stage TEXT DEFAULT '',
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  -- ============================================
+  -- Table 5: admin_ad_scripts (NEW)
+  -- ============================================
+  CREATE TABLE IF NOT EXISTS admin_ad_scripts (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    name TEXT NOT NULL,
+    platform TEXT NOT NULL CHECK (platform IN ('adsterra', 'monetag', 'propellerads', 'custom')),
+    script_code TEXT NOT NULL,
+    position TEXT NOT NULL DEFAULT 'both' CHECK (position IN ('menu', 'worldcup', 'both')),
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  -- ============================================
+  -- RLS: admin_settings (public read, auth write)
+  -- ============================================
+  ALTER TABLE admin_settings ENABLE ROW LEVEL SECURITY;
+
+  CREATE POLICY "Public read admin_settings"
+    ON admin_settings FOR SELECT USING (true);
+
+  CREATE POLICY "Auth write admin_settings"
+    ON admin_settings FOR INSERT
+    TO authenticated WITH CHECK (true);
+
+  CREATE POLICY "Auth update admin_settings"
+    ON admin_settings FOR UPDATE
+    TO authenticated USING (true);
+
+  -- ============================================
+  -- RLS: admin_ads (public read, auth write/delete)
+  -- ============================================
+  ALTER TABLE admin_ads ENABLE ROW LEVEL SECURITY;
+
+  CREATE POLICY "Public read admin_ads"
+    ON admin_ads FOR SELECT USING (true);
+
+  CREATE POLICY "Auth write admin_ads"
+    ON admin_ads FOR INSERT
+    TO authenticated WITH CHECK (true);
+
+  CREATE POLICY "Auth update admin_ads"
+    ON admin_ads FOR UPDATE
+    TO authenticated USING (true);
+
+  CREATE POLICY "Auth delete admin_ads"
+    ON admin_ads FOR DELETE
+    TO authenticated USING (true);
+
+  -- ============================================
+  -- RLS: live_views (public all)
+  -- ============================================
+  ALTER TABLE live_views ENABLE ROW LEVEL SECURITY;
+
+  CREATE POLICY "Public all live_views"
+    ON live_views FOR ALL USING (true) WITH CHECK (true);
+
+  -- ============================================
+  -- RLS: match_schedules (public read, auth write/update/delete)
+  -- ============================================
+  ALTER TABLE match_schedules ENABLE ROW LEVEL SECURITY;
+
+  CREATE POLICY "Public read match_schedules"
+    ON match_schedules FOR SELECT USING (true);
+
+  CREATE POLICY "Auth write match_schedules"
+    ON match_schedules FOR INSERT
+    TO authenticated WITH CHECK (true);
+
+  CREATE POLICY "Auth update match_schedules"
+    ON match_schedules FOR UPDATE
+    TO authenticated USING (true);
+
+  CREATE POLICY "Auth delete match_schedules"
+    ON match_schedules FOR DELETE
+    TO authenticated USING (true);
+
+  -- ============================================
+  -- RLS: admin_ad_scripts (public read, auth write/update/delete)
+  -- ============================================
+  ALTER TABLE admin_ad_scripts ENABLE ROW LEVEL SECURITY;
+
+  CREATE POLICY "Public read admin_ad_scripts"
+    ON admin_ad_scripts FOR SELECT USING (true);
+
+  CREATE POLICY "Auth write admin_ad_scripts"
+    ON admin_ad_scripts FOR INSERT
+    TO authenticated WITH CHECK (true);
+
+  CREATE POLICY "Auth update admin_ad_scripts"
+    ON admin_ad_scripts FOR UPDATE
+    TO authenticated USING (true);
+
+  CREATE POLICY "Auth delete admin_ad_scripts"
+    ON admin_ad_scripts FOR DELETE
+    TO authenticated USING (true);
+
+  -- ============================================
+  -- Table 6: tv_channels (NEW)
+  -- ============================================
+  CREATE TABLE IF NOT EXISTS tv_channels (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    category TEXT NOT NULL DEFAULT 'Default',
+    channel_name TEXT NOT NULL,
+    stream_url TEXT DEFAULT '',
+    stream_type TEXT NOT NULL DEFAULT 'hls' CHECK (stream_type IN ('hls', 'iframe', 'dash', 'mp4', 'upload', 'm3u_playlist')),
+    logo_url TEXT DEFAULT '',
+    logo_data TEXT DEFAULT '',
+    media_data TEXT DEFAULT '',
+    media_mime TEXT DEFAULT '',
+    media_filename TEXT DEFAULT '',
+    is_visible BOOLEAN DEFAULT true,
+    sort_order INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  -- ============================================
+  -- RLS: tv_channels (public read, auth write/update/delete)
+  -- ============================================
+  ALTER TABLE tv_channels ENABLE ROW LEVEL SECURITY;
+
+  CREATE POLICY "Public read tv_channels"
+    ON tv_channels FOR SELECT USING (true);
+
+  CREATE POLICY "Auth insert tv_channels"
+    ON tv_channels FOR INSERT
+    TO authenticated WITH CHECK (true);
+
+  CREATE POLICY "Auth update tv_channels"
+    ON tv_channels FOR UPDATE
+    TO authenticated USING (true);
+
+  CREATE POLICY "Auth delete tv_channels"
+    ON tv_channels FOR DELETE
+    TO authenticated USING (true);
+
+  ============================================
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI TV Pro - Admin Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'aitv-dark': '#050505',
+            'aitv-card': '#0a0a0f',
+            'aitv-border': '#1a1a2e',
+            'aitv-neon-blue': '#00f3ff',
+            'aitv-neon-pink': '#ff0055',
+            'aitv-neon-green': '#00ff88',
+            'aitv-text': '#e0e0e0',
+            'aitv-muted': '#6b7280',
+          },
+          fontFamily: {
+            'orbitron': ['Orbitron', 'sans-serif'],
+            'exo': ['Exo 2', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Exo 2', sans-serif;
+      background: #050505;
+      color: #e0e0e0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a0f; }
+    ::-webkit-scrollbar-thumb { background: #1a1a2e; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #00f3ff33; }
+
+    /* Neon glow effects */
+    .glow-blue { text-shadow: 0 0 10px #00f3ff, 0 0 20px #00f3ff44; }
+    .glow-pink { text-shadow: 0 0 10px #ff0055, 0 0 20px #ff005544; }
+    .glow-green { text-shadow: 0 0 10px #00ff88, 0 0 20px #00ff8844; }
+
+    .border-glow-blue { box-shadow: 0 0 10px #00f3ff22, inset 0 0 10px #00f3ff08; }
+    .border-glow-pink { box-shadow: 0 0 10px #ff005522, inset 0 0 10px #ff005508; }
+
+    /* Animated background */
+    .bg-grid {
+      background-image:
+        linear-gradient(#00f3ff06 1px, transparent 1px),
+        linear-gradient(90deg, #00f3ff06 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    /* Toggle switch */
+    .toggle-switch {
+      position: relative;
+      width: 52px;
+      height: 28px;
+      background: #1a1a2e;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid #2a2a3e;
+      flex-shrink: 0;
+    }
+    .toggle-switch.active {
+      background: #00f3ff22;
+      border-color: #00f3ff;
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: #6b7280;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+    .toggle-switch.active::after {
+      left: 27px;
+      background: #00f3ff;
+      box-shadow: 0 0 10px #00f3ff88;
+    }
+    .toggle-switch.pink.active {
+      background: #ff005522;
+      border-color: #ff0055;
+    }
+    .toggle-switch.pink.active::after {
+      background: #ff0055;
+      box-shadow: 0 0 10px #ff005588;
+    }
+    .toggle-switch.green.active {
+      background: #00ff8822;
+      border-color: #00ff88;
+    }
+    .toggle-switch.green.active::after {
+      background: #00ff88;
+      box-shadow: 0 0 10px #00ff8888;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      min-height: 100vh;
+      background: #0a0a0f;
+      border-right: 1px solid #1a1a2e;
+      transition: transform 0.3s ease;
+      z-index: 40;
+    }
+    .sidebar-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: #9ca3af;
+    }
+    .sidebar-item:hover {
+      background: #00f3ff08;
+      color: #e0e0e0;
+    }
+    .sidebar-item.active {
+      background: #00f3ff0d;
+      border-left-color: #00f3ff;
+      color: #00f3ff;
+    }
+    .sidebar-item i { width: 20px; text-align: center; }
+
+    /* Cards */
+    .admin-card {
+      background: #0a0a0f;
+      border: 1px solid #1a1a2e;
+      border-radius: 12px;
+      padding: 24px;
+      transition: all 0.3s ease;
+    }
+    .admin-card:hover {
+      border-color: #00f3ff33;
+    }
+
+    /* Stats card */
+    .stat-card {
+      background: linear-gradient(135deg, #0a0a0f, #0f0f1a);
+      border: 1px solid #1a1a2e;
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px #00f3ff11;
+    }
+
+    /* Form inputs */
+    .admin-input {
+      background: #0f0f1a;
+      border: 1px solid #1a1a2e;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #e0e0e0;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 14px;
+      width: 100%;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    .admin-input:focus {
+      border-color: #00f3ff;
+      box-shadow: 0 0 0 2px #00f3ff22;
+    }
+    .admin-input::placeholder { color: #4b5563; }
+    textarea.admin-input { resize: vertical; min-height: 80px; }
+
+    /* Admin select */
+    .admin-select {
+      background: #0f0f1a;
+      border: 1px solid #1a1a2e;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #e0e0e0;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 14px;
+      width: 100%;
+      transition: all 0.2s ease;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+    .admin-select:focus {
+      border-color: #00f3ff;
+      box-shadow: 0 0 0 2px #00f3ff22;
+    }
+
+    /* Buttons */
+    .btn-neon {
+      background: linear-gradient(135deg, #00f3ff, #0099cc);
+      color: #050505;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 600;
+      font-size: 12px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .btn-neon:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px #00f3ff44;
+    }
+    .btn-neon:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-pink {
+      background: linear-gradient(135deg, #ff0055, #cc0044);
+      color: white;
+    }
+    .btn-pink:hover {
+      box-shadow: 0 4px 16px #ff005544;
+    }
+    .btn-green {
+      background: linear-gradient(135deg, #00ff88, #00cc66);
+      color: #050505;
+    }
+    .btn-green:hover {
+      box-shadow: 0 4px 16px #00ff8844;
+    }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid #1a1a2e;
+      color: #9ca3af;
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 500;
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-ghost:hover {
+      border-color: #00f3ff;
+      color: #00f3ff;
+    }
+    .btn-danger {
+      background: #ff005515;
+      border: 1px solid #ff005544;
+      color: #ff0055;
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 500;
+      font-size: 13px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-danger:hover {
+      background: #ff005525;
+      border-color: #ff0055;
+    }
+    .btn-edit {
+      background: #00f3ff10;
+      border: 1px solid #00f3ff33;
+      color: #00f3ff;
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 500;
+      font-size: 13px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-edit:hover {
+      background: #00f3ff20;
+      border-color: #00f3ff;
+    }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .toast {
+      padding: 14px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'Exo 2', sans-serif;
+      animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s;
+      min-width: 280px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .toast-success {
+      background: #0a1a0f;
+      border: 1px solid #00ff8844;
+      color: #00ff88;
+    }
+    .toast-error {
+      background: #1a0a0f;
+      border: 1px solid #ff005544;
+      color: #ff0055;
+    }
+    .toast-info {
+      background: #0a0f1a;
+      border: 1px solid #00f3ff44;
+      color: #00f3ff;
+    }
+    @keyframes toastIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes toastOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-box {
+      background: #0a0a0f;
+      border: 1px solid #1a1a2e;
+      border-radius: 16px;
+      padding: 28px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    /* Login screen */
+    .login-bg {
+      background: radial-gradient(ellipse at center, #0a0f1a 0%, #050505 70%);
+    }
+    .login-card {
+      background: #0a0a0f;
+      border: 1px solid #1a1a2e;
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 0 60px #00f3ff08;
+    }
+
+    /* Pulse animation */
+    @keyframes pulse-neon {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .pulse-neon { animation: pulse-neon 2s infinite; }
+
+    /* Spin */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { animation: spin 1s linear infinite; }
+
+    /* Ad item */
+    .ad-item {
+      background: #0f0f1a;
+      border: 1px solid #1a1a2e;
+      border-radius: 10px;
+      padding: 16px;
+      transition: all 0.2s ease;
+    }
+    .ad-item:hover {
+      border-color: #00f3ff33;
+    }
+
+    /* Match item */
+    .match-item {
+      background: #0f0f1a;
+      border: 1px solid #1a1a2e;
+      border-radius: 10px;
+      padding: 16px;
+      transition: all 0.2s ease;
+    }
+    .match-item:hover {
+      border-color: #00ff8833;
+    }
+
+    /* Script item */
+    .script-item {
+      background: #0f0f1a;
+      border: 1px solid #1a1a2e;
+      border-radius: 10px;
+      padding: 16px;
+      transition: all 0.2s ease;
+    }
+    .script-item:hover {
+      border-color: #ff005533;
+    }
+
+    /* Code textarea for ad scripts */
+    .admin-textarea-code {
+      background: #0f0f1a;
+      border: 1px solid #1a1a2e;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #00ff88;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      width: 100%;
+      min-height: 120px;
+      resize: vertical;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .admin-textarea-code:focus {
+      border-color: #00f3ff;
+      box-shadow: 0 0 0 2px #00f3ff22;
+    }
+
+    /* Access Denied shake animation */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+    .shake { animation: shake 0.5s ease; }
+
+    /* Fade in sections */
+    .section-content {
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive sidebar */
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        transform: translateX(-100%);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 8px 0 32px rgba(0,0,0,0.5);
+      }
+      .mobile-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 35;
+      }
+    }
+
+    /* Status badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-on {
+      background: #00ff8815;
+      border: 1px solid #00ff8844;
+      color: #00ff88;
+    }
+    .badge-off {
+      background: #ff005515;
+      border: 1px solid #ff005544;
+      color: #ff0055;
+    }
+
+    /* Platform badge */
+    .badge-platform {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-adsterra { background: #00f3ff15; border: 1px solid #00f3ff44; color: #00f3ff; }
+    .badge-monetag { background: #ff990015; border: 1px solid #ff990044; color: #ff9900; }
+    .badge-propellerads { background: #ff005515; border: 1px solid #ff005544; color: #ff0055; }
+    .badge-custom { background: #00ff8815; border: 1px solid #00ff8844; color: #00ff88; }
+
+    /* Position badge */
+    .badge-pos {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #1a1a2e;
+      border: 1px solid #2a2a3e;
+      color: #9ca3af;
+    }
+
+    /* Logo shimmer */
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    .logo-shimmer {
+      background: linear-gradient(90deg, #00f3ff, #ff0055, #00f3ff);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 3s linear infinite;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ========== LOGIN SCREEN ========== -->
+  <div id="loginScreen" class="login-bg min-h-screen flex items-center justify-center bg-grid">
+    <div class="login-card">
+      <div class="text-center mb-8">
+        <div class="flex items-center justify-center gap-3 mb-4">
+          <i class="fas fa-tv text-3xl text-aitv-neon-blue"></i>
+          <h1 class="font-orbitron text-2xl font-bold logo-shimmer">AI TV Pro</h1>
+        </div>
+        <p class="text-aitv-muted text-sm font-exo">Admin Control Panel</p>
+      </div>
+
+      <div id="loginError" class="hidden mb-4 p-3 rounded-lg bg-aitv-neon-pink/10 border border-aitv-neon-pink/30 text-aitv-neon-pink text-sm text-center">
+        <i class="fas fa-exclamation-triangle mr-2"></i> <span id="loginErrorMsg">Login failed. Please try again.</span>
+      </div>
+
+      <button id="googleLoginBtn" type="button" class="btn-neon w-full py-3 flex items-center justify-center gap-3" style="background:linear-gradient(135deg,#4285F4,#34A853);">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l6-6C34.5 6.5 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.1-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.1 18.9 12 24 12c3 0 5.7 1.1 7.8 2.9l6-6C34.5 6.5 29.5 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.8 13.6-4.7l-6.3-5.2C29.4 35.6 26.8 36 24 36c-5.2 0-9.6-2.9-11.3-7H6.1C9.4 38.9 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.3-2.3 4.2-4.3 5.5l6.3 5.2C41.2 35.1 44 29.9 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
+        Sign in with Google
+      </button>
+
+      <div class="mt-6 text-center">
+        <p class="text-aitv-muted text-xs">Only authorized Google accounts can access admin panel</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ACCESS DENIED SCREEN ========== -->
+  <div id="accessDenied" class="hidden login-bg min-h-screen flex items-center justify-center bg-grid">
+    <div class="login-card text-center">
+      <i class="fas fa-shield-alt text-5xl text-aitv-neon-pink mb-4"></i>
+      <h2 class="font-orbitron text-xl font-bold text-aitv-neon-pink mb-3">Access Denied</h2>
+      <p class="text-aitv-muted text-sm mb-4">Your account is not authorized to access this admin panel.</p>
+      <p class="text-aitv-muted text-xs">Redirecting to login...</p>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN PANEL ========== -->
+  <div id="adminPanel" class="hidden min-h-screen flex">
+    <!-- Mobile Overlay -->
+    <div id="mobileOverlay" class="mobile-overlay hidden" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar flex flex-col">
+      <div class="p-5 border-b border-aitv-border">
+        <div class="flex items-center gap-3">
+          <i class="fas fa-tv text-xl text-aitv-neon-blue"></i>
+          <div>
+            <h1 class="font-orbitron text-sm font-bold text-aitv-neon-blue">AI TV Pro</h1>
+            <p class="text-aitv-muted text-xs">Admin Panel</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 py-4">
+        <div class="px-4 mb-2">
+          <span class="text-xs text-aitv-muted uppercase tracking-wider font-orbitron">Navigation</span>
+        </div>
+        <div class="sidebar-item active" data-section="dashboard" onclick="switchSection('dashboard')">
+          <i class="fas fa-chart-pie"></i> Dashboard
+        </div>
+        <div class="sidebar-item" data-section="channels" onclick="switchSection('channels')">
+          <i class="fas fa-tv"></i> TV Channels
+        </div>
+        <div class="sidebar-item" data-section="matches" onclick="switchSection('matches')">
+          <i class="fas fa-futbol"></i> Match Schedule
+        </div>
+        <div class="sidebar-item" data-section="ads" onclick="switchSection('ads')">
+          <i class="fas fa-ad"></i> Ad Management
+        </div>
+        <div class="sidebar-item" data-section="adscripts" onclick="switchSection('adscripts')">
+          <i class="fas fa-code"></i> Ad Scripts
+        </div>
+        <div class="sidebar-item" data-section="security" onclick="switchSection('security')">
+          <i class="fas fa-shield-alt"></i> Security
+        </div>
+        <div class="sidebar-item" data-section="maintenance" onclick="switchSection('maintenance')">
+          <i class="fas fa-tools"></i> Maintenance Mode
+        </div>
+      </nav>
+
+      <div class="p-4 border-t border-aitv-border">
+        <div class="mb-3 px-2">
+          <p id="sidebarUserEmail" class="text-xs text-aitv-muted truncate"></p>
+        </div>
+        <button id="logoutBtn" class="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-aitv-neon-pink/10 border border-aitv-neon-pink/30 text-aitv-neon-pink text-sm hover:bg-aitv-neon-pink/20 transition-all">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 min-h-screen bg-grid">
+      <!-- Top Bar -->
+      <header class="sticky top-0 z-30 bg-aitv-dark/80 backdrop-blur-md border-b border-aitv-border px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <button onclick="toggleSidebar()" class="md:hidden text-aitv-muted hover:text-aitv-neon-blue transition-colors">
+            <i class="fas fa-bars text-lg"></i>
+          </button>
+          <h2 id="sectionTitle" class="font-orbitron text-lg font-semibold text-aitv-neon-blue">Dashboard</h2>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-xs text-aitv-muted hidden sm:inline">
+            <i class="fas fa-circle text-aitv-neon-green text-[8px] mr-1 pulse-neon"></i> Connected
+          </span>
+          <div id="adminUserInfo" class="flex items-center gap-2">
+            <img id="adminAvatar" class="w-8 h-8 rounded-full border border-aitv-neon-blue/30 hidden" alt=""/>
+            <div class="w-8 h-8 rounded-full bg-aitv-neon-blue/10 border border-aitv-neon-blue/30 flex items-center justify-center" id="adminAvatarFallback">
+              <i class="fas fa-user-shield text-aitv-neon-blue text-sm"></i>
+            </div>
+            <span id="adminName" class="text-xs text-aitv-muted hidden sm:inline"></span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="p-6 max-w-7xl mx-auto">
+
+        <!-- ===== DASHBOARD SECTION ===== -->
+        <div id="section-dashboard" class="section-content">
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4 mb-8">
+            <div class="stat-card">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-aitv-muted text-xs">Maintenance</span>
+                <i class="fas fa-tools text-aitv-neon-pink text-sm"></i>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="dashMaintenanceStatus" class="badge badge-off">OFF</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-aitv-muted text-xs">Ads Status</span>
+                <i class="fas fa-ad text-aitv-neon-blue text-sm"></i>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="dashAdsStatus" class="badge badge-on">ON</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-aitv-muted text-xs">Inline Ads</span>
+                <i class="fas fa-image text-aitv-neon-blue text-sm"></i>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="dashInlineCount" class="font-orbitron text-2xl font-bold text-aitv-neon-blue">0</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-aitv-muted text-xs">Popup Ads</span>
+                <i class="fas fa-window-restore text-aitv-neon-pink text-sm"></i>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="dashPopupStatus" class="badge badge-on">ON</span>
+                <span id="dashPopupCount" class="text-aitv-muted text-xs ml-1">(0)</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-aitv-muted text-xs">Total Matches</span>
+                <i class="fas fa-futbol text-aitv-neon-green text-sm"></i>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="dashMatchCount" class="font-orbitron text-2xl font-bold text-aitv-neon-green">0</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-aitv-muted text-xs">Ad Scripts</span>
+                <i class="fas fa-code text-aitv-neon-pink text-sm"></i>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="dashScriptCount" class="font-orbitron text-2xl font-bold text-aitv-neon-pink">0</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-aitv-muted text-xs">TV Channels</span>
+                <i class="fas fa-tv text-aitv-neon-blue text-sm"></i>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="dashChannelCount" class="font-orbitron text-2xl font-bold text-aitv-neon-blue">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="admin-card mb-6">
+            <h3 class="font-orbitron text-sm font-semibold text-aitv-neon-blue mb-4">
+              <i class="fas fa-bolt mr-2"></i>Quick Actions
+            </h3>
+            <div class="flex flex-wrap gap-3">
+              <button onclick="quickToggleMaintenance()" class="btn-ghost flex items-center gap-2">
+                <i class="fas fa-power-off"></i> Toggle Maintenance
+              </button>
+              <button onclick="quickToggleAds()" class="btn-ghost flex items-center gap-2">
+                <i class="fas fa-ad"></i> Toggle Ads
+              </button>
+              <button onclick="quickTogglePopupAds()" class="btn-ghost flex items-center gap-2">
+                <i class="fas fa-window-restore"></i> Toggle Popup Ads
+              </button>
+              <button onclick="switchSection('ads');setTimeout(()=>openAdModal('inline'),100)" class="btn-ghost flex items-center gap-2">
+                <i class="fas fa-plus"></i> Add New Ad
+              </button>
+              <button onclick="switchSection('matches');setTimeout(()=>openMatchModal(),100)" class="btn-ghost flex items-center gap-2">
+                <i class="fas fa-futbol"></i> Add Match
+              </button>
+              <button onclick="switchSection('adscripts');setTimeout(()=>openScriptModal(),100)" class="btn-ghost flex items-center gap-2">
+                <i class="fas fa-code"></i> Add Ad Script
+              </button>
+            </div>
+          </div>
+
+          <!-- Recent Ads Table -->
+          <div class="admin-card">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-orbitron text-sm font-semibold text-aitv-neon-blue">
+                <i class="fas fa-list mr-2"></i>Recent Ads
+              </h3>
+              <button onclick="refreshAll()" class="btn-ghost text-xs flex items-center gap-1">
+                <i class="fas fa-sync-alt"></i> Refresh
+              </button>
+            </div>
+            <div id="dashRecentAds" class="space-y-3 max-h-96 overflow-y-auto">
+              <div class="text-center py-8 text-aitv-muted">
+                <i class="fas fa-spinner spinner text-xl mb-2"></i>
+                <p class="text-sm">Loading ads...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== TV CHANNELS SECTION ===== -->
+        <div id="section-channels" class="section-content hidden">
+          <!-- Category Filter -->
+          <div class="admin-card mb-6">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-orbitron text-sm font-semibold text-aitv-neon-blue">
+                <i class="fas fa-tv mr-2"></i>TV Channels
+              </h3>
+              <div class="flex items-center gap-3">
+                <select id="channelCategoryFilter" class="admin-select" style="max-width:180px;" onchange="filterChannelsByCategory()">
+                  <option value="all">All Categories</option>
+                  <option value="Default">Default</option>
+                  <option value="Sports">Sports</option>
+                  <option value="News">News</option>
+                  <option value="Cartoon">Cartoon</option>
+                  <option value="Natok">Natok</option>
+                </select>
+                <button onclick="openChannelModal()" class="btn-neon text-xs py-2 px-4">
+                  <i class="fas fa-plus mr-1"></i> Add Channel
+                </button>
+              </div>
+            </div>
+            <p class="text-aitv-muted text-sm mb-4">Manage TV channels across categories. Channels appear in the AI TV Pro frontend based on their category.</p>
+            <div id="channelList" class="space-y-3 max-h-[700px] overflow-y-auto">
+              <div class="text-center py-8 text-aitv-muted">
+                <i class="fas fa-spinner spinner text-xl mb-2"></i>
+                <p class="text-sm">Loading channels...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Channel Preview Player -->
+          <div class="admin-card">
+            <h3 class="font-orbitron text-sm font-semibold text-aitv-neon-green mb-4">
+              <i class="fas fa-play-circle mr-2"></i>Preview Player
+            </h3>
+            <div class="bg-black rounded-lg overflow-hidden" style="max-width:640px;aspect-ratio:16/9;position:relative;">
+              <video id="previewVideo" class="w-full h-full object-contain" playsinline></video>
+              <iframe id="previewIframe" class="w-full h-full absolute inset-0" style="display:none;border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+              <div id="previewPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-aitv-muted">
+                <i class="fas fa-play-circle text-4xl mb-2"></i>
+                <p class="text-sm">Click preview on a channel to test playback</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== MATCH SCHEDULE SECTION ===== -->
+        <div id="section-matches" class="section-content hidden">
+          <div class="admin-card mb-6">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-orbitron text-sm font-semibold text-aitv-neon-green">
+                <i class="fas fa-futbol mr-2"></i>Match Schedules
+              </h3>
+              <button onclick="openMatchModal()" class="btn-neon btn-green text-xs py-2 px-4">
+                <i class="fas fa-plus mr-1"></i> Add Match
+              </button>
+            </div>
+            <div id="matchList" class="space-y-3 max-h-[700px] overflow-y-auto">
+              <div class="text-center py-8 text-aitv-muted">
+                <i class="fas fa-spinner spinner text-xl mb-2"></i>
+                <p class="text-sm">Loading matches...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== AD MANAGEMENT SECTION ===== -->
+        <div id="section-ads" class="section-content hidden">
+          <!-- Global Toggles -->
+          <div class="admin-card mb-6">
+            <h3 class="font-orbitron text-sm font-semibold text-aitv-neon-blue mb-5">
+              <i class="fas fa-sliders-h mr-2"></i>Global Controls
+            </h3>
+            <div class="flex flex-col sm:flex-row gap-6">
+              <div class="flex items-center justify-between sm:justify-start gap-4 flex-1 p-4 rounded-lg bg-[#0f0f1a] border border-aitv-border">
+                <div>
+                  <p class="text-sm font-semibold">Ads Enabled</p>
+                  <p class="text-xs text-aitv-muted">Toggle all ads globally</p>
+                </div>
+                <div id="adsToggle" class="toggle-switch active" onclick="toggleSetting('ads_enabled', this)"></div>
+              </div>
+              <div class="flex items-center justify-between sm:justify-start gap-4 flex-1 p-4 rounded-lg bg-[#0f0f1a] border border-aitv-border">
+                <div>
+                  <p class="text-sm font-semibold">Popup Ads Enabled</p>
+                  <p class="text-xs text-aitv-muted">Toggle popup ads specifically</p>
+                </div>
+                <div id="popupAdsToggle" class="toggle-switch pink active" onclick="toggleSetting('popup_ads_enabled', this)"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inline Ads -->
+          <div class="admin-card mb-6">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-orbitron text-sm font-semibold text-aitv-neon-blue">
+                <i class="fas fa-image mr-2"></i>Inline Ads (Banner)
+              </h3>
+              <button onclick="openAdModal('inline')" class="btn-neon text-xs py-2 px-4">
+                <i class="fas fa-plus mr-1"></i> Add Inline Ad
+              </button>
+            </div>
+            <div id="inlineAdsList" class="space-y-3 max-h-[500px] overflow-y-auto">
+              <div class="text-center py-8 text-aitv-muted">
+                <i class="fas fa-spinner spinner text-xl mb-2"></i>
+                <p class="text-sm">Loading inline ads...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Popup Ads -->
+          <div class="admin-card">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-orbitron text-sm font-semibold text-aitv-neon-pink">
+                <i class="fas fa-window-restore mr-2"></i>Popup Ads
+              </h3>
+              <button onclick="openAdModal('popup')" class="btn-neon btn-pink text-xs py-2 px-4">
+                <i class="fas fa-plus mr-1"></i> Add Popup Ad
+              </button>
+            </div>
+            <div id="popupAdsList" class="space-y-3 max-h-[500px] overflow-y-auto">
+              <div class="text-center py-8 text-aitv-muted">
+                <i class="fas fa-spinner spinner text-xl mb-2"></i>
+                <p class="text-sm">Loading popup ads...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== AD SCRIPTS SECTION ===== -->
+        <div id="section-adscripts" class="section-content hidden">
+          <div class="admin-card mb-6">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-orbitron text-sm font-semibold text-aitv-neon-pink">
+                <i class="fas fa-code mr-2"></i>Ad Scripts
+              </h3>
+              <button onclick="openScriptModal()" class="btn-neon btn-pink text-xs py-2 px-4">
+                <i class="fas fa-plus mr-1"></i> Add Script
+              </button>
+            </div>
+            <p class="text-aitv-muted text-sm mb-4">Manage third-party ad scripts (Adsterra, Monetag, PropellerAds, or custom JS code).</p>
+            <div id="scriptList" class="space-y-3 max-h-[700px] overflow-y-auto">
+              <div class="text-center py-8 text-aitv-muted">
+                <i class="fas fa-spinner spinner text-xl mb-2"></i>
+                <p class="text-sm">Loading scripts...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== SECURITY SECTION ===== -->
+        <div id="section-security" class="section-content hidden">
+          <div class="admin-card mb-6">
+            <div class="flex items-center gap-3 mb-5">
+              <i class="fas fa-shield-alt text-aitv-neon-pink text-xl"></i>
+              <div>
+                <h3 class="font-orbitron text-sm font-semibold text-aitv-neon-pink">Email Whitelist</h3>
+                <p class="text-aitv-muted text-sm mt-1">Only emails in this list can access the admin panel. Changes take effect immediately.</p>
+              </div>
+            </div>
+
+            <!-- Current User Info -->
+            <div class="p-4 rounded-lg bg-[#0f0f1a] border border-aitv-border mb-5">
+              <p class="text-xs text-aitv-muted uppercase tracking-wider mb-2 font-orbitron">Current Session</p>
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-aitv-neon-blue/10 border border-aitv-neon-blue/30 flex items-center justify-center">
+                  <i class="fas fa-user text-aitv-neon-blue"></i>
+                </div>
+                <div>
+                  <p id="securityUserName" class="text-sm font-semibold text-white">Admin</p>
+                  <p id="securityUserEmail" class="text-xs text-aitv-neon-green"></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Allowed Emails Textarea -->
+            <div class="mb-4">
+              <label class="block text-sm text-aitv-muted mb-2 font-exo">
+                <i class="fas fa-envelope mr-1"></i> Allowed Email Addresses (comma-separated)
+              </label>
+              <textarea
+                id="allowedEmailsInput"
+                class="admin-input"
+                rows="4"
+                placeholder="admin@gmail.com, owner@gmail.com"
+              ></textarea>
+              <p class="text-aitv-muted text-xs mt-2">Separate multiple emails with commas. These emails will be the only ones allowed to access this admin panel.</p>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+              <button onclick="saveAllowedEmails()" class="btn-neon">
+                <i class="fas fa-save mr-2"></i> Save Emails
+              </button>
+              <button onclick="addCurrentUserEmail()" class="btn-ghost flex items-center gap-2">
+                <i class="fas fa-plus-circle"></i> Add Current Email
+              </button>
+            </div>
+          </div>
+
+          <!-- Security Info Card -->
+          <div class="admin-card">
+            <h3 class="font-orbitron text-sm font-semibold text-aitv-neon-blue mb-4">
+              <i class="fas fa-info-circle mr-2"></i>Security Information
+            </h3>
+            <div class="space-y-3">
+              <div class="flex items-start gap-3 p-3 rounded-lg bg-[#0f0f1a] border border-aitv-border">
+                <i class="fas fa-lock text-aitv-neon-green mt-0.5"></i>
+                <div>
+                  <p class="text-sm font-semibold">Row Level Security</p>
+                  <p class="text-xs text-aitv-muted">All database tables have RLS enabled. Public users can only read data; authenticated users can write.</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 p-3 rounded-lg bg-[#0f0f1a] border border-aitv-border">
+                <i class="fas fa-user-check text-aitv-neon-blue mt-0.5"></i>
+                <div>
+                  <p class="text-sm font-semibold">Email Verification</p>
+                  <p class="text-xs text-aitv-muted">Google OAuth ensures valid email addresses. The whitelist adds a second layer of access control.</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 p-3 rounded-lg bg-[#0f0f1a] border border-aitv-border">
+                <i class="fas fa-exclamation-triangle text-aitv-neon-pink mt-0.5"></i>
+                <div>
+                  <p class="text-sm font-semibold">Warning</p>
+                  <p class="text-xs text-aitv-muted">Removing your own email will lock you out. Make sure your email is always in the allowed list.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== MAINTENANCE MODE SECTION ===== -->
+        <div id="section-maintenance" class="section-content hidden">
+          <div class="admin-card mb-6">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h3 class="font-orbitron text-sm font-semibold text-aitv-neon-blue">
+                  <i class="fas fa-tools mr-2"></i>Maintenance Mode
+                </h3>
+                <p class="text-aitv-muted text-sm mt-1">When enabled, users will see a maintenance overlay instead of the app content.</p>
+              </div>
+              <div id="maintenanceToggle" class="toggle-switch" onclick="toggleSetting('maintenance_mode', this)"></div>
+            </div>
+
+            <div id="maintenanceActiveBanner" class="hidden mb-6 p-4 rounded-lg bg-aitv-neon-pink/10 border border-aitv-neon-pink/30">
+              <div class="flex items-center gap-3">
+                <i class="fas fa-exclamation-triangle text-aitv-neon-pink text-lg"></i>
+                <div>
+                  <p class="text-aitv-neon-pink font-semibold text-sm">Maintenance Mode is ACTIVE</p>
+                  <p class="text-aitv-muted text-xs">The app is currently showing the maintenance page to all users.</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm text-aitv-muted mb-2 font-exo">
+                <i class="fas fa-comment-alt mr-1"></i> Maintenance Message
+              </label>
+              <textarea
+                id="maintenanceMessage"
+                class="admin-input"
+                rows="4"
+                placeholder="Enter the message users will see during maintenance..."
+              ></textarea>
+              <div class="flex items-center gap-3 mt-4">
+                <button onclick="saveMaintenanceMessage()" class="btn-neon">
+                  <i class="fas fa-save mr-2"></i> Save Message
+                </button>
+                <button onclick="previewMaintenance()" class="btn-ghost">
+                  <i class="fas fa-eye mr-2"></i> Preview
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Maintenance Preview -->
+          <div id="maintenancePreview" class="hidden admin-card">
+            <h3 class="font-orbitron text-sm font-semibold text-aitv-neon-blue mb-4">
+              <i class="fas fa-eye mr-2"></i>Maintenance Page Preview
+            </h3>
+            <div class="bg-aitv-dark rounded-lg p-8 border border-aitv-border text-center">
+              <i class="fas fa-tools text-4xl text-aitv-neon-pink mb-4"></i>
+              <h4 class="font-orbitron text-xl font-bold text-white mb-2">Under Maintenance</h4>
+              <p id="maintenancePreviewText" class="text-aitv-muted text-sm max-w-md mx-auto"></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ========== AD MODAL ========== -->
+  <div id="adModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="flex items-center justify-between mb-6">
+        <h3 id="adModalTitle" class="font-orbitron text-sm font-semibold text-aitv-neon-blue">Add Inline Ad</h3>
+        <button onclick="closeAdModal()" class="text-aitv-muted hover:text-white transition-colors">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+
+      <form id="adForm" onsubmit="saveAd(event)">
+        <input type="hidden" id="adEditId" value="" />
+        <input type="hidden" id="adType" value="inline" />
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm text-aitv-muted mb-1">Title *</label>
+            <input id="adTitle" type="text" class="admin-input" placeholder="Ad title" required />
+          </div>
+          <div>
+            <label class="block text-sm text-aitv-muted mb-1">Description</label>
+            <textarea id="adDescription" class="admin-input" placeholder="Ad description"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm text-aitv-muted mb-1">Image URL</label>
+            <input id="adImageUrl" type="url" class="admin-input" placeholder="https://example.com/image.jpg" />
+          </div>
+          <div>
+            <label class="block text-sm text-aitv-muted mb-1">Link URL</label>
+            <input id="adLinkUrl" type="url" class="admin-input" placeholder="https://example.com" />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Position</label>
+              <input id="adPosition" type="number" class="admin-input" placeholder="0" min="0" value="0" />
+            </div>
+            <div id="countdownField">
+              <label class="block text-sm text-aitv-muted mb-1">Countdown (sec)</label>
+              <input id="adCountdown" type="number" class="admin-input" placeholder="5" min="1" value="5" />
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <label class="text-sm text-aitv-muted">Active</label>
+            <div id="adActiveToggle" class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+          </div>
+        </div>
+
+        <div class="flex gap-3 mt-6">
+          <button type="submit" class="btn-neon flex-1">
+            <i class="fas fa-save mr-2"></i> Save
+          </button>
+          <button type="button" onclick="closeAdModal()" class="btn-ghost flex-1">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========== MATCH MODAL ========== -->
+  <div id="matchModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="flex items-center justify-between mb-6">
+        <h3 id="matchModalTitle" class="font-orbitron text-sm font-semibold text-aitv-neon-green">Add Match</h3>
+        <button onclick="closeMatchModal()" class="text-aitv-muted hover:text-white transition-colors">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+
+      <form id="matchForm" onsubmit="saveMatch(event)">
+        <input type="hidden" id="matchEditId" value="" />
+
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Team Home *</label>
+              <input id="matchTeamHome" type="text" class="admin-input" placeholder="e.g. Brazil" required />
+            </div>
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Team Away *</label>
+              <input id="matchTeamAway" type="text" class="admin-input" placeholder="e.g. Argentina" required />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Match Date *</label>
+              <input id="matchDate" type="date" class="admin-input" required />
+            </div>
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Match Time *</label>
+              <input id="matchTime" type="text" class="admin-input" placeholder="e.g. 20:00" required />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">TV Channel</label>
+              <input id="matchTvChannel" type="text" class="admin-input" placeholder="e.g. beIN Sports 1" />
+            </div>
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Stage / Group</label>
+              <input id="matchStage" type="text" class="admin-input" placeholder="e.g. Group A, Quarter Final" />
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <label class="text-sm text-aitv-muted">Active</label>
+            <div id="matchActiveToggle" class="toggle-switch green active" onclick="this.classList.toggle('active')"></div>
+          </div>
+        </div>
+
+        <div class="flex gap-3 mt-6">
+          <button type="submit" class="btn-neon btn-green flex-1">
+            <i class="fas fa-save mr-2"></i> Save
+          </button>
+          <button type="button" onclick="closeMatchModal()" class="btn-ghost flex-1">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========== SCRIPT MODAL ========== -->
+  <div id="scriptModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="flex items-center justify-between mb-6">
+        <h3 id="scriptModalTitle" class="font-orbitron text-sm font-semibold text-aitv-neon-pink">Add Ad Script</h3>
+        <button onclick="closeScriptModal()" class="text-aitv-muted hover:text-white transition-colors">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+
+      <form id="scriptForm" onsubmit="saveScript(event)">
+        <input type="hidden" id="scriptEditId" value="" />
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm text-aitv-muted mb-1">Script Name *</label>
+            <input id="scriptName" type="text" class="admin-input" placeholder="e.g. Adsterra Banner" required />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Platform *</label>
+              <select id="scriptPlatform" class="admin-select" required>
+                <option value="adsterra">Adsterra</option>
+                <option value="monetag">Monetag</option>
+                <option value="propellerads">PropellerAds</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Position *</label>
+              <select id="scriptPosition" class="admin-select" required>
+                <option value="both">Both (Menu + Worldcup)</option>
+                <option value="menu">Menu Page Only</option>
+                <option value="worldcup">Worldcup Page Only</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm text-aitv-muted mb-1">Script Code *</label>
+            <textarea id="scriptCode" class="admin-textarea-code" placeholder="Paste your JavaScript code here..." required></textarea>
+            <p class="text-aitv-muted text-xs mt-1">Paste the full JS code provided by the ad platform.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <label class="text-sm text-aitv-muted">Active</label>
+            <div id="scriptActiveToggle" class="toggle-switch pink active" onclick="this.classList.toggle('active')"></div>
+          </div>
+        </div>
+
+        <div class="flex gap-3 mt-6">
+          <button type="submit" class="btn-neon btn-pink flex-1">
+            <i class="fas fa-save mr-2"></i> Save
+          </button>
+          <button type="button" onclick="closeScriptModal()" class="btn-ghost flex-1">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========== CHANNEL MODAL ========== -->
+  <div id="channelModal" class="modal-overlay hidden">
+    <div class="modal-box" style="max-width:720px;">
+      <div class="flex items-center justify-between mb-6">
+        <h3 id="channelModalTitle" class="font-orbitron text-sm font-semibold text-aitv-neon-blue">Add Channel</h3>
+        <button onclick="closeChannelModal()" class="text-aitv-muted hover:text-white transition-colors">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+
+      <form id="channelForm" onsubmit="saveChannel(event)">
+        <input type="hidden" id="channelEditId" value="" />
+
+        <div class="space-y-4">
+          <div id="channelNameField">
+            <label class="block text-sm text-aitv-muted mb-1">Channel Name *</label>
+            <input id="channelName" type="text" class="admin-input" placeholder="e.g. Sony Six HD" required />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Category *</label>
+              <select id="channelCategory" class="admin-select" required>
+                <option value="Default">Default</option>
+                <option value="Sports">Sports</option>
+                <option value="News">News</option>
+                <option value="Cartoon">Cartoon</option>
+                <option value="Natok">Natok</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Stream Type *</label>
+              <select id="channelStreamType" class="admin-select" required onchange="toggleStreamInput()">
+                <option value="hls">HLS (M3U8 Link)</option>
+                <option value="m3u_playlist">GitHub Raw M3U Playlist</option>
+                <option value="iframe">YouTube / Iframe</option>
+                <option value="dash">DASH (MPD Link)</option>
+                <option value="mp4">Direct MP4 Link</option>
+                <option value="upload">Local Upload</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- M3U Playlist URL input (for m3u_playlist type) -->
+          <div id="m3uPlaylistField" class="hidden">
+            <label class="block text-sm text-aitv-muted mb-1">M3U Playlist URL</label>
+            <div class="flex gap-2">
+              <input id="m3uPlaylistUrl" type="text" class="admin-input flex-1" placeholder="https://raw.githubusercontent.com/user/repo/main/playlist.m3u" />
+              <button type="button" onclick="fetchM3UPlaylist()" class="btn-neon text-xs py-2 px-4 whitespace-nowrap" id="fetchM3UBtn">
+                <i class="fas fa-download mr-1"></i> Fetch & Import
+              </button>
+            </div>
+            <p class="text-aitv-muted text-xs mt-1">Paste a GitHub raw M3U playlist link. Channel names, logos and stream URLs will be auto-extracted from #EXTINF entries.</p>
+            <div id="m3uFetchProgress" class="hidden mt-2">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-spinner spinner text-aitv-neon-blue"></i>
+                <span id="m3uFetchStatus" class="text-xs text-aitv-muted">Fetching playlist...</span>
+              </div>
+            </div>
+            <!-- M3U Imported Channels Preview Grid -->
+            <div id="m3uImportedChannels" class="hidden mt-4">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-semibold text-aitv-neon-green">
+                  <i class="fas fa-list mr-1"></i> Imported Channels (<span id="m3uChannelCount">0</span>)
+                </h4>
+                <div class="flex gap-2">
+                  <button type="button" onclick="selectAllM3UChannels()" class="btn-ghost text-xs py-1 px-3">Select All</button>
+                  <button type="button" onclick="deselectAllM3UChannels()" class="btn-ghost text-xs py-1 px-3">Deselect All</button>
+                  <button type="button" onclick="saveM3UChannels()" class="btn-neon btn-green text-xs py-2 px-4" id="saveM3UBtn">
+                    <i class="fas fa-save mr-1"></i> Save All to Database
+                  </button>
+                </div>
+              </div>
+              <div id="m3uChannelGrid" class="space-y-2 max-h-[500px] overflow-y-auto pr-1"></div>
+            </div>
+          </div>
+
+          <!-- Stream URL input (for HLS, iframe, DASH, MP4) -->
+          <div id="streamUrlField">
+            <label class="block text-sm text-aitv-muted mb-1">Stream URL</label>
+            <input id="channelStreamUrl" type="text" class="admin-input" placeholder="https://example.com/stream.m3u8 or YouTube embed URL" />
+            <p id="streamUrlHint" class="text-aitv-muted text-xs mt-1">For YouTube Live: use embed URL format (https://www.youtube.com/embed/VIDEO_ID)</p>
+          </div>
+
+          <!-- Local Upload field (shown only when stream_type=upload) -->
+          <div id="uploadField" class="hidden">
+            <label class="block text-sm text-aitv-muted mb-1">Upload Media File</label>
+            <input id="channelFileUpload" type="file" accept="video/*,audio/*,.m3u,.m3u8" class="admin-input" style="padding:8px;" onchange="handleChannelFileUpload(this)" />
+            <p class="text-aitv-muted text-xs mt-1">Max 50MB. Supported: MP4, WebM, M3U, M3U8. File is sanitized and saved to database.</p>
+            <div id="uploadProgress" class="hidden mt-2">
+              <div class="w-full bg-aitv-border rounded-full h-2">
+                <div id="uploadProgressBar" class="bg-aitv-neon-blue h-2 rounded-full transition-all" style="width:0%"></div>
+              </div>
+              <p id="uploadProgressText" class="text-xs text-aitv-muted mt-1">Uploading...</p>
+            </div>
+            <input type="hidden" id="channelMediaData" value="" />
+            <input type="hidden" id="channelMediaMime" value="" />
+            <input type="hidden" id="channelMediaFilename" value="" />
+          </div>
+
+          <div id="channelLogoFields">
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Logo URL (optional)</label>
+              <input id="channelLogoUrl" type="url" class="admin-input" placeholder="https://example.com/logo.png" />
+            </div>
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Or Upload Logo</label>
+              <input id="channelLogoUpload" type="file" accept="image/*" class="admin-input" style="padding:8px;" onchange="handleLogoUpload(this)" />
+              <input type="hidden" id="channelLogoData" value="" />
+            </div>
+          </div>
+          <div id="channelSortFields" class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-aitv-muted mb-1">Sort Order</label>
+              <input id="channelSortOrder" type="number" class="admin-input" placeholder="0" min="0" value="0" />
+            </div>
+            <div class="flex items-center gap-3 pt-6">
+              <label class="text-sm text-aitv-muted">Visible</label>
+              <div id="channelVisibleToggle" class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="channelSaveButtons" class="flex gap-3 mt-6">
+          <button type="submit" class="btn-neon flex-1">
+            <i class="fas fa-save mr-2"></i> Save Channel
+          </button>
+          <button type="button" onclick="closeChannelModal()" class="btn-ghost flex-1">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========== CONFIRM MODAL ========== -->
+  <div id="confirmModal" class="modal-overlay hidden">
+    <div class="modal-box max-w-sm text-center">
+      <i class="fas fa-exclamation-triangle text-4xl text-aitv-neon-pink mb-4"></i>
+      <h3 class="font-orbitron text-base font-semibold text-white mb-2">Confirm Delete</h3>
+      <p id="confirmText" class="text-aitv-muted text-sm mb-6">Are you sure you want to delete this item?</p>
+      <div class="flex gap-3">
+        <button id="confirmYes" class="btn-neon btn-pink flex-1">
+          <i class="fas fa-trash mr-2"></i> Delete
+        </button>
+        <button onclick="closeConfirmModal()" class="btn-ghost flex-1">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== JAVASCRIPT ========== -->
+  <script>
+    // ===== CONFIGURATION =====
+    const SUPABASE_URL = 'https://iuyxfiwyoqzfydicvmgf.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_OPZerdddI-787ZxypW9LQA_nN59s3yO';
+
+    // ===== SUPABASE CLIENT =====
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ===== STATE =====
+    let currentSection = 'dashboard';
+    let ads = [];
+    let settings = {};
+    let matchSchedules = [];
+    let adScripts = [];
+    let channels = [];
+    let currentUser = null;
+
+    // ===== INITIALIZATION =====
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Google login button
+      document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.href
+          }
+        });
+        if (error) {
+          showToast('Login failed. Please try again.', 'error');
+          document.getElementById('loginError').classList.remove('hidden');
+          document.getElementById('loginErrorMsg').textContent = 'Authentication failed. Please try again.';
+        }
+      });
+
+      // Logout button
+      document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await supabaseClient.auth.signOut();
+        location.reload();
+      });
+
+      // Session check — handle OAuth redirect callback
+      const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+      if (session && session.user) {
+        currentUser = session.user;
+        await showAdminPanel();
+      }
+
+      // Auth state listener (handles redirect callback too)
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          currentUser = session.user;
+          showAdminPanel();
+        } else if (event === 'SIGNED_OUT') {
+          currentUser = null;
+          document.getElementById('adminPanel').classList.add('hidden');
+          document.getElementById('accessDenied').classList.add('hidden');
+          document.getElementById('loginScreen').classList.remove('hidden');
+        }
+      });
+    });
+
+    // ===== EMAIL ACCESS CHECK =====
+    async function checkEmailAccess(user) {
+      if (!user || !user.email) return false;
+      try {
+        const { data } = await supabaseClient
+          .from('admin_settings')
+          .select('value')
+          .eq('key', 'admin_allowed_emails')
+          .single();
+        if (!data || !data.value) return false;
+        const allowedEmails = data.value.split(',').map(e => e.trim().toLowerCase());
+        return allowedEmails.includes(user.email.toLowerCase());
+      } catch (err) {
+        console.error('Email check error:', err);
+        return false;
+      }
+    }
+
+    function showAccessDenied() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('adminPanel').classList.add('hidden');
+      document.getElementById('accessDenied').classList.remove('hidden');
+      const deniedEl = document.getElementById('accessDenied');
+      deniedEl.classList.add('shake');
+      setTimeout(async () => {
+        await supabaseClient.auth.signOut();
+        location.reload();
+      }, 3000);
+    }
+
+    // ===== AUTH HELPER =====
+    function updateAdminUserInfo() {
+      if (!currentUser) return;
+      const name = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || 'Admin';
+      const avatar = currentUser.user_metadata?.avatar_url || '';
+
+      const nameEl = document.getElementById('adminName');
+      const avatarEl = document.getElementById('adminAvatar');
+      const fallbackEl = document.getElementById('adminAvatarFallback');
+      const sidebarEmailEl = document.getElementById('sidebarUserEmail');
+
+      if (nameEl) nameEl.textContent = name;
+      if (sidebarEmailEl && currentUser.email) sidebarEmailEl.textContent = currentUser.email;
+      if (avatar && avatarEl) {
+        avatarEl.src = avatar;
+        avatarEl.classList.remove('hidden');
+        if (fallbackEl) fallbackEl.classList.add('hidden');
+      }
+    }
+
+    async function showAdminPanel() {
+      const hasAccess = await checkEmailAccess(currentUser);
+      if (!hasAccess) {
+        showAccessDenied();
+        return;
+      }
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('accessDenied').classList.add('hidden');
+      document.getElementById('adminPanel').classList.remove('hidden');
+      document.getElementById('loginError').classList.add('hidden');
+      updateAdminUserInfo();
+      loadAllData();
+    }
+
+    // ===== DATA LOADING =====
+    async function loadAllData() {
+      await Promise.all([loadSettings(), loadAds(), loadMatchSchedules(), loadAdScripts(), loadChannels()]);
+      updateDashboard();
+    }
+
+    async function loadSettings() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('admin_settings')
+          .select('*');
+
+        if (error) {
+          console.error('Error loading settings:', error);
+          showToast('Failed to load settings from Supabase', 'error');
+          return;
+        }
+
+        settings = {};
+        if (data) {
+          data.forEach(row => {
+            settings[row.key] = row.value;
+          });
+        }
+
+        // Update UI
+        updateSettingsUI();
+        updateSecurityUI();
+      } catch (err) {
+        console.error('Settings load error:', err);
+        showToast('Connection error - check Supabase config', 'error');
+      }
+    }
+
+    async function loadAds() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('admin_ads')
+          .select('*')
+          .order('position', { ascending: true });
+
+        if (error) {
+          console.error('Error loading ads:', error);
+          showToast('Failed to load ads from Supabase', 'error');
+          return;
+        }
+
+        ads = data || [];
+        renderAdsLists();
+      } catch (err) {
+        console.error('Ads load error:', err);
+      }
+    }
+
+    async function loadMatchSchedules() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('match_schedules')
+          .select('*')
+          .order('match_date', { ascending: true });
+
+        if (error) {
+          console.error('Error loading match schedules:', error);
+          showToast('Failed to load match schedules', 'error');
+          return;
+        }
+
+        matchSchedules = data || [];
+        renderMatchList();
+      } catch (err) {
+        console.error('Match schedules load error:', err);
+      }
+    }
+
+    async function loadAdScripts() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('admin_ad_scripts')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error loading ad scripts:', error);
+          showToast('Failed to load ad scripts', 'error');
+          return;
+        }
+
+        adScripts = data || [];
+        renderScriptList();
+      } catch (err) {
+        console.error('Ad scripts load error:', err);
+      }
+    }
+
+    function refreshAll() {
+      showToast('Refreshing data...', 'info');
+      loadAllData();
+    }
+
+    // ===== SETTINGS =====
+    function updateSettingsUI() {
+      // Ads toggle
+      const adsToggle = document.getElementById('adsToggle');
+      if (settings.ads_enabled === 'true') {
+        adsToggle.classList.add('active');
+      } else {
+        adsToggle.classList.remove('active');
+      }
+
+      // Popup ads toggle
+      const popupAdsToggle = document.getElementById('popupAdsToggle');
+      if (settings.popup_ads_enabled === 'true') {
+        popupAdsToggle.classList.add('active');
+      } else {
+        popupAdsToggle.classList.remove('active');
+      }
+
+      // Maintenance toggle
+      const maintenanceToggle = document.getElementById('maintenanceToggle');
+      if (settings.maintenance_mode === 'true') {
+        maintenanceToggle.classList.add('active');
+      } else {
+        maintenanceToggle.classList.remove('active');
+      }
+
+      // Maintenance message
+      document.getElementById('maintenanceMessage').value = settings.maintenance_message || '';
+
+      // Maintenance banner
+      const banner = document.getElementById('maintenanceActiveBanner');
+      if (settings.maintenance_mode === 'true') {
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+      }
+    }
+
+    function updateSecurityUI() {
+      // Allowed emails
+      const emailsInput = document.getElementById('allowedEmailsInput');
+      if (emailsInput) {
+        emailsInput.value = settings.admin_allowed_emails || '';
+      }
+
+      // Security user info
+      if (currentUser) {
+        const name = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || 'Admin';
+        const secName = document.getElementById('securityUserName');
+        const secEmail = document.getElementById('securityUserEmail');
+        if (secName) secName.textContent = name;
+        if (secEmail) secEmail.textContent = currentUser.email || '';
+      }
+    }
+
+    async function toggleSetting(key, el) {
+      el.classList.toggle('active');
+      const newValue = el.classList.contains('active') ? 'true' : 'false';
+
+      try {
+        const { error } = await supabaseClient
+          .from('admin_settings')
+          .upsert({
+            key: key,
+            value: newValue,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'key' });
+
+        if (error) throw error;
+
+        settings[key] = newValue;
+        updateSettingsUI();
+        updateDashboard();
+
+        const labels = {
+          maintenance_mode: 'Maintenance Mode',
+          ads_enabled: 'Ads',
+          popup_ads_enabled: 'Popup Ads'
+        };
+        showToast(`${labels[key]} turned ${newValue === 'true' ? 'ON' : 'OFF'}`, 'success');
+      } catch (err) {
+        console.error('Toggle error:', err);
+        el.classList.toggle('active'); // Revert UI
+        showToast('Failed to update setting', 'error');
+      }
+    }
+
+    async function saveMaintenanceMessage() {
+      const message = document.getElementById('maintenanceMessage').value.trim();
+      if (!message) {
+        showToast('Please enter a maintenance message', 'error');
+        return;
+      }
+
+      try {
+        const { error } = await supabaseClient
+          .from('admin_settings')
+          .upsert({
+            key: 'maintenance_message',
+            value: message,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'key' });
+
+        if (error) throw error;
+
+        settings.maintenance_message = message;
+        showToast('Maintenance message saved', 'success');
+      } catch (err) {
+        console.error('Save message error:', err);
+        showToast('Failed to save maintenance message', 'error');
+      }
+    }
+
+    function previewMaintenance() {
+      const message = document.getElementById('maintenanceMessage').value.trim();
+      document.getElementById('maintenancePreviewText').textContent = message || 'No message set.';
+      document.getElementById('maintenancePreview').classList.toggle('hidden');
+    }
+
+    // ===== QUICK ACTIONS =====
+    function quickToggleMaintenance() {
+      const el = document.getElementById('maintenanceToggle');
+      toggleSetting('maintenance_mode', el);
+    }
+
+    function quickToggleAds() {
+      const el = document.getElementById('adsToggle');
+      toggleSetting('ads_enabled', el);
+    }
+
+    function quickTogglePopupAds() {
+      const el = document.getElementById('popupAdsToggle');
+      toggleSetting('popup_ads_enabled', el);
+    }
+
+    // ===== DASHBOARD =====
+    function updateDashboard() {
+      // Maintenance status
+      const maintenanceStatus = document.getElementById('dashMaintenanceStatus');
+      if (settings.maintenance_mode === 'true') {
+        maintenanceStatus.textContent = 'ON';
+        maintenanceStatus.className = 'badge badge-on';
+      } else {
+        maintenanceStatus.textContent = 'OFF';
+        maintenanceStatus.className = 'badge badge-off';
+      }
+
+      // Ads status
+      const adsStatus = document.getElementById('dashAdsStatus');
+      if (settings.ads_enabled === 'true') {
+        adsStatus.textContent = 'ON';
+        adsStatus.className = 'badge badge-on';
+      } else {
+        adsStatus.textContent = 'OFF';
+        adsStatus.className = 'badge badge-off';
+      }
+
+      // Inline ads count
+      const inlineAds = ads.filter(a => a.type === 'inline' && a.active);
+      document.getElementById('dashInlineCount').textContent = inlineAds.length;
+
+      // Popup status + count
+      const popupAds = ads.filter(a => a.type === 'popup');
+      const activePopupAds = popupAds.filter(a => a.active);
+      const popupStatus = document.getElementById('dashPopupStatus');
+      if (settings.popup_ads_enabled === 'true') {
+        popupStatus.textContent = 'ON';
+        popupStatus.className = 'badge badge-on';
+      } else {
+        popupStatus.textContent = 'OFF';
+        popupStatus.className = 'badge badge-off';
+      }
+      document.getElementById('dashPopupCount').textContent = '(' + activePopupAds.length + ')';
+
+      // Match count
+      const activeMatches = matchSchedules.filter(m => m.active);
+      document.getElementById('dashMatchCount').textContent = activeMatches.length;
+
+      // Script count
+      const activeScripts = adScripts.filter(s => s.active);
+      document.getElementById('dashScriptCount').textContent = activeScripts.length;
+
+      // Channel count
+      const dashChannelCount = document.getElementById('dashChannelCount');
+      if (dashChannelCount) dashChannelCount.textContent = channels.length;
+
+      // Recent ads
+      renderDashRecentAds();
+    }
+
+    function renderDashRecentAds() {
+      const container = document.getElementById('dashRecentAds');
+      if (!ads.length) {
+        container.innerHTML = '<div class="text-center py-8 text-aitv-muted"><i class="fas fa-inbox text-xl mb-2"></i><p class="text-sm">No ads yet</p></div>';
+        return;
+      }
+
+      const recentAds = [...ads].slice(0, 5);
+      container.innerHTML = recentAds.map(ad => `
+        <div class="ad-item flex items-center justify-between">
+          <div class="flex items-center gap-3 min-w-0">
+            ${ad.image_url ? `<img src="${ad.image_url}" class="w-10 h-10 rounded object-cover flex-shrink-0" alt="" onerror="this.style.display='none'"/>` : `<div class="w-10 h-10 rounded bg-aitv-border flex items-center justify-center flex-shrink-0"><i class="fas fa-${ad.type === 'popup' ? 'window-restore' : 'image'} text-aitv-muted text-xs"></i></div>`}
+            <div class="min-w-0">
+              <p class="text-sm font-semibold truncate">${escapeHtml(ad.title)}</p>
+              <p class="text-xs text-aitv-muted">${ad.type === 'popup' ? 'Popup' : 'Inline'} &bull; Pos: ${ad.position}</p>
+            </div>
+          </div>
+          <span class="${ad.active ? 'badge badge-on' : 'badge badge-off'} flex-shrink-0">${ad.active ? 'Active' : 'Inactive'}</span>
+        </div>
+      `).join('');
+    }
+
+    // ===== SECTION SWITCHING =====
+    const sectionTitles = {
+      dashboard: 'Dashboard',
+      channels: 'TV Channels',
+      matches: 'Match Schedule',
+      ads: 'Ad Management',
+      adscripts: 'Ad Scripts',
+      security: 'Security',
+      maintenance: 'Maintenance Mode'
+    };
+
+    function switchSection(section) {
+      currentSection = section;
+
+      // Update sidebar
+      document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.section === section);
+      });
+
+      // Update title
+      document.getElementById('sectionTitle').textContent = sectionTitles[section] || section;
+
+      // Show/hide sections
+      document.querySelectorAll('[id^="section-"]').forEach(el => {
+        el.classList.add('hidden');
+      });
+      const targetSection = document.getElementById('section-' + section);
+      if (targetSection) {
+        targetSection.classList.remove('hidden');
+      }
+
+      // Close sidebar on mobile
+      closeSidebar();
+    }
+
+    // ===== SIDEBAR =====
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('mobileOverlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('hidden');
+    }
+
+    function closeSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('mobileOverlay');
+      sidebar.classList.remove('open');
+      overlay.classList.add('hidden');
+    }
+
+    // ===== AD MANAGEMENT =====
+    function renderAdsLists() {
+      renderAdsByType('inline', 'inlineAdsList');
+      renderAdsByType('popup', 'popupAdsList');
+    }
+
+    function renderAdsByType(type, containerId) {
+      const container = document.getElementById(containerId);
+      const filteredAds = ads.filter(a => a.type === type);
+
+      if (!filteredAds.length) {
+        container.innerHTML = `<div class="text-center py-8 text-aitv-muted"><i class="fas fa-inbox text-xl mb-2"></i><p class="text-sm">No ${type} ads yet</p></div>`;
+        return;
+      }
+
+      container.innerHTML = filteredAds.map(ad => `
+        <div class="ad-item">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3 min-w-0">
+              ${ad.image_url ? `<img src="${ad.image_url}" class="w-12 h-12 rounded object-cover flex-shrink-0" alt="" onerror="this.style.display='none'"/>` : `<div class="w-12 h-12 rounded bg-aitv-border flex items-center justify-center flex-shrink-0"><i class="fas fa-${type === 'popup' ? 'window-restore' : 'image'} text-aitv-muted"></i></div>`}
+              <div class="min-w-0">
+                <p class="text-sm font-semibold truncate">${escapeHtml(ad.title)}</p>
+                <p class="text-xs text-aitv-muted">${ad.description ? escapeHtml(ad.description.substring(0, 60)) : 'No description'}</p>
+              </div>
+            </div>
+            <span class="${ad.active ? 'badge badge-on' : 'badge badge-off'} flex-shrink-0 ml-2">${ad.active ? 'Active' : 'Inactive'}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="text-xs text-aitv-muted">
+              Position: ${ad.position}${type === 'popup' ? ' &bull; Countdown: ' + ad.countdown + 's' : ''}
+              ${ad.link_url ? ' &bull; <a href="' + escapeHtml(ad.link_url) + '" target="_blank" class="text-aitv-neon-blue hover:underline">Link</a>' : ''}
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="editAd('${ad.id}')" class="btn-edit text-xs">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="toggleAdActive('${ad.id}')" class="btn-ghost text-xs py-1 px-2">
+                <i class="fas fa-${ad.active ? 'eye-slash' : 'eye'}"></i>
+              </button>
+              <button onclick="confirmDeleteAd('${ad.id}')" class="btn-danger text-xs">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openAdModal(type, editId) {
+      const modal = document.getElementById('adModal');
+      const title = document.getElementById('adModalTitle');
+      const form = document.getElementById('adForm');
+
+      form.reset();
+      document.getElementById('adEditId').value = '';
+      document.getElementById('adType').value = type;
+      document.getElementById('adActiveToggle').classList.add('active');
+      document.getElementById('adPosition').value = 0;
+      document.getElementById('adCountdown').value = 5;
+
+      // Show/hide countdown field
+      document.getElementById('countdownField').style.display = type === 'popup' ? 'block' : 'block';
+
+      if (editId) {
+        const ad = ads.find(a => a.id === editId);
+        if (ad) {
+          title.textContent = 'Edit ' + (ad.type === 'popup' ? 'Popup' : 'Inline') + ' Ad';
+          document.getElementById('adEditId').value = ad.id;
+          document.getElementById('adType').value = ad.type;
+          document.getElementById('adTitle').value = ad.title;
+          document.getElementById('adDescription').value = ad.description || '';
+          document.getElementById('adImageUrl').value = ad.image_url || '';
+          document.getElementById('adLinkUrl').value = ad.link_url || '';
+          document.getElementById('adPosition').value = ad.position || 0;
+          document.getElementById('adCountdown').value = ad.countdown || 5;
+          if (ad.active) {
+            document.getElementById('adActiveToggle').classList.add('active');
+          } else {
+            document.getElementById('adActiveToggle').classList.remove('active');
+          }
+        }
+      } else {
+        title.textContent = 'Add ' + (type === 'popup' ? 'Popup' : 'Inline') + ' Ad';
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeAdModal() {
+      document.getElementById('adModal').classList.add('hidden');
+    }
+
+    function editAd(id) {
+      const ad = ads.find(a => a.id === id);
+      if (ad) openAdModal(ad.type, id);
+    }
+
+    async function saveAd(event) {
+      event.preventDefault();
+
+      const editId = document.getElementById('adEditId').value;
+      const type = document.getElementById('adType').value;
+      const title = document.getElementById('adTitle').value.trim();
+      const description = document.getElementById('adDescription').value.trim();
+      const image_url = document.getElementById('adImageUrl').value.trim();
+      const link_url = document.getElementById('adLinkUrl').value.trim();
+      const position = parseInt(document.getElementById('adPosition').value) || 0;
+      const countdown = parseInt(document.getElementById('adCountdown').value) || 5;
+      const active = document.getElementById('adActiveToggle').classList.contains('active');
+
+      const record = {
+        type, title, description, image_url, link_url, position, countdown, active
+      };
+
+      try {
+        let error;
+        if (editId) {
+          ({ error } = await supabaseClient
+            .from('admin_ads')
+            .update(record)
+            .eq('id', editId));
+        } else {
+          ({ error } = await supabaseClient
+            .from('admin_ads')
+            .insert([record]));
+        }
+
+        if (error) throw error;
+
+        showToast(editId ? 'Ad updated successfully' : 'Ad created successfully', 'success');
+        closeAdModal();
+        await loadAds();
+        updateDashboard();
+      } catch (err) {
+        console.error('Save ad error:', err);
+        showToast('Failed to save ad: ' + err.message, 'error');
+      }
+    }
+
+    async function toggleAdActive(id) {
+      const ad = ads.find(a => a.id === id);
+      if (!ad) return;
+
+      try {
+        const { error } = await supabaseClient
+          .from('admin_ads')
+          .update({ active: !ad.active })
+          .eq('id', id);
+
+        if (error) throw error;
+
+        showToast(`Ad ${!ad.active ? 'activated' : 'deactivated'}`, 'success');
+        await loadAds();
+        updateDashboard();
+      } catch (err) {
+        console.error('Toggle ad error:', err);
+        showToast('Failed to toggle ad', 'error');
+      }
+    }
+
+    function confirmDeleteAd(id) {
+      const ad = ads.find(a => a.id === id);
+      if (!ad) return;
+      openConfirmModal('Are you sure you want to delete the ad "' + escapeHtml(ad.title) + '"?', async () => {
+        try {
+          const { error } = await supabaseClient
+            .from('admin_ads')
+            .delete()
+            .eq('id', id);
+
+          if (error) throw error;
+
+          showToast('Ad deleted successfully', 'success');
+          await loadAds();
+          updateDashboard();
+        } catch (err) {
+          console.error('Delete ad error:', err);
+          showToast('Failed to delete ad', 'error');
+        }
+      });
+    }
+
+    // ===== MATCH SCHEDULE MANAGEMENT =====
+    function renderMatchList() {
+      const container = document.getElementById('matchList');
+
+      if (!matchSchedules.length) {
+        container.innerHTML = '<div class="text-center py-8 text-aitv-muted"><i class="fas fa-futbol text-xl mb-2"></i><p class="text-sm">No matches scheduled yet</p></div>';
+        return;
+      }
+
+      container.innerHTML = matchSchedules.map(match => `
+        <div class="match-item">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-full bg-aitv-neon-green/10 border border-aitv-neon-green/30 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-futbol text-aitv-neon-green text-sm"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold">${escapeHtml(match.team_home)} vs ${escapeHtml(match.team_away)}</p>
+                <p class="text-xs text-aitv-muted">
+                  ${match.stage ? escapeHtml(match.stage) + ' &bull; ' : ''}${formatDate(match.match_date)} &bull; ${escapeHtml(match.match_time)}
+                </p>
+              </div>
+            </div>
+            <span class="${match.active ? 'badge badge-on' : 'badge badge-off'} flex-shrink-0 ml-2">${match.active ? 'Active' : 'Inactive'}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="text-xs text-aitv-muted">
+              ${match.tv_channel ? '<i class="fas fa-tv mr-1"></i>' + escapeHtml(match.tv_channel) : 'No channel'}
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="editMatch('${match.id}')" class="btn-edit text-xs">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="toggleMatchActive('${match.id}')" class="btn-ghost text-xs py-1 px-2">
+                <i class="fas fa-${match.active ? 'eye-slash' : 'eye'}"></i>
+              </button>
+              <button onclick="confirmDeleteMatch('${match.id}')" class="btn-danger text-xs">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openMatchModal(editId) {
+      const modal = document.getElementById('matchModal');
+      const title = document.getElementById('matchModalTitle');
+      const form = document.getElementById('matchForm');
+
+      form.reset();
+      document.getElementById('matchEditId').value = '';
+      document.getElementById('matchActiveToggle').classList.add('active');
+
+      if (editId) {
+        const match = matchSchedules.find(m => m.id === editId);
+        if (match) {
+          title.textContent = 'Edit Match';
+          document.getElementById('matchEditId').value = match.id;
+          document.getElementById('matchTeamHome').value = match.team_home || '';
+          document.getElementById('matchTeamAway').value = match.team_away || '';
+          document.getElementById('matchDate').value = match.match_date || '';
+          document.getElementById('matchTime').value = match.match_time || '';
+          document.getElementById('matchTvChannel').value = match.tv_channel || '';
+          document.getElementById('matchStage').value = match.stage || '';
+          if (match.active) {
+            document.getElementById('matchActiveToggle').classList.add('active');
+          } else {
+            document.getElementById('matchActiveToggle').classList.remove('active');
+          }
+        }
+      } else {
+        title.textContent = 'Add Match';
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeMatchModal() {
+      document.getElementById('matchModal').classList.add('hidden');
+    }
+
+    function editMatch(id) {
+      openMatchModal(id);
+    }
+
+    async function saveMatch(event) {
+      event.preventDefault();
+
+      const editId = document.getElementById('matchEditId').value;
+      const team_home = document.getElementById('matchTeamHome').value.trim();
+      const team_away = document.getElementById('matchTeamAway').value.trim();
+      const match_date = document.getElementById('matchDate').value;
+      const match_time = document.getElementById('matchTime').value.trim();
+      const tv_channel = document.getElementById('matchTvChannel').value.trim();
+      const stage = document.getElementById('matchStage').value.trim();
+      const active = document.getElementById('matchActiveToggle').classList.contains('active');
+
+      const record = {
+        team_home, team_away, match_date, match_time, tv_channel, stage, active
+      };
+
+      try {
+        let error;
+        if (editId) {
+          ({ error } = await supabaseClient
+            .from('match_schedules')
+            .update(record)
+            .eq('id', editId));
+        } else {
+          ({ error } = await supabaseClient
+            .from('match_schedules')
+            .insert([record]));
+        }
+
+        if (error) throw error;
+
+        showToast(editId ? 'Match updated successfully' : 'Match created successfully', 'success');
+        closeMatchModal();
+        await loadMatchSchedules();
+        updateDashboard();
+      } catch (err) {
+        console.error('Save match error:', err);
+        showToast('Failed to save match: ' + err.message, 'error');
+      }
+    }
+
+    async function toggleMatchActive(id) {
+      const match = matchSchedules.find(m => m.id === id);
+      if (!match) return;
+
+      try {
+        const { error } = await supabaseClient
+          .from('match_schedules')
+          .update({ active: !match.active })
+          .eq('id', id);
+
+        if (error) throw error;
+
+        showToast(`Match ${!match.active ? 'activated' : 'deactivated'}`, 'success');
+        await loadMatchSchedules();
+        updateDashboard();
+      } catch (err) {
+        console.error('Toggle match error:', err);
+        showToast('Failed to toggle match', 'error');
+      }
+    }
+
+    function confirmDeleteMatch(id) {
+      const match = matchSchedules.find(m => m.id === id);
+      if (!match) return;
+      openConfirmModal('Are you sure you want to delete the match "' + escapeHtml(match.team_home) + ' vs ' + escapeHtml(match.team_away) + '"?', async () => {
+        try {
+          const { error } = await supabaseClient
+            .from('match_schedules')
+            .delete()
+            .eq('id', id);
+
+          if (error) throw error;
+
+          showToast('Match deleted successfully', 'success');
+          await loadMatchSchedules();
+          updateDashboard();
+        } catch (err) {
+          console.error('Delete match error:', err);
+          showToast('Failed to delete match', 'error');
+        }
+      });
+    }
+
+    // ===== AD SCRIPTS MANAGEMENT =====
+    function renderScriptList() {
+      const container = document.getElementById('scriptList');
+
+      if (!adScripts.length) {
+        container.innerHTML = '<div class="text-center py-8 text-aitv-muted"><i class="fas fa-code text-xl mb-2"></i><p class="text-sm">No ad scripts yet</p></div>';
+        return;
+      }
+
+      container.innerHTML = adScripts.map(script => `
+        <div class="script-item">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-full bg-aitv-neon-pink/10 border border-aitv-neon-pink/30 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-code text-aitv-neon-pink text-sm"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold truncate">${escapeHtml(script.name)}</p>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="badge-platform badge-${script.platform}">${script.platform}</span>
+                  <span class="badge-pos">${script.position}</span>
+                </div>
+              </div>
+            </div>
+            <span class="${script.active ? 'badge badge-on' : 'badge badge-off'} flex-shrink-0 ml-2">${script.active ? 'Active' : 'Inactive'}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="text-xs text-aitv-muted truncate max-w-[60%]">
+              <code class="text-aitv-neon-green">${escapeHtml(script.script_code.substring(0, 80))}${script.script_code.length > 80 ? '...' : ''}</code>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="editScript('${script.id}')" class="btn-edit text-xs">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="toggleScriptActive('${script.id}')" class="btn-ghost text-xs py-1 px-2">
+                <i class="fas fa-${script.active ? 'eye-slash' : 'eye'}"></i>
+              </button>
+              <button onclick="confirmDeleteScript('${script.id}')" class="btn-danger text-xs">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openScriptModal(editId) {
+      const modal = document.getElementById('scriptModal');
+      const title = document.getElementById('scriptModalTitle');
+      const form = document.getElementById('scriptForm');
+
+      form.reset();
+      document.getElementById('scriptEditId').value = '';
+      document.getElementById('scriptActiveToggle').classList.add('active');
+      document.getElementById('scriptPlatform').value = 'adsterra';
+      document.getElementById('scriptPosition').value = 'both';
+
+      if (editId) {
+        const script = adScripts.find(s => s.id === editId);
+        if (script) {
+          title.textContent = 'Edit Ad Script';
+          document.getElementById('scriptEditId').value = script.id;
+          document.getElementById('scriptName').value = script.name || '';
+          document.getElementById('scriptPlatform').value = script.platform || 'adsterra';
+          document.getElementById('scriptPosition').value = script.position || 'both';
+          document.getElementById('scriptCode').value = script.script_code || '';
+          if (script.active) {
+            document.getElementById('scriptActiveToggle').classList.add('active');
+          } else {
+            document.getElementById('scriptActiveToggle').classList.remove('active');
+          }
+        }
+      } else {
+        title.textContent = 'Add Ad Script';
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeScriptModal() {
+      document.getElementById('scriptModal').classList.add('hidden');
+    }
+
+    function editScript(id) {
+      openScriptModal(id);
+    }
+
+    async function saveScript(event) {
+      event.preventDefault();
+
+      const editId = document.getElementById('scriptEditId').value;
+      const name = document.getElementById('scriptName').value.trim();
+      const platform = document.getElementById('scriptPlatform').value;
+      const position = document.getElementById('scriptPosition').value;
+      const script_code = document.getElementById('scriptCode').value.trim();
+      const active = document.getElementById('scriptActiveToggle').classList.contains('active');
+
+      if (!script_code) {
+        showToast('Please enter the script code', 'error');
+        return;
+      }
+
+      const record = {
+        name, platform, script_code, position, active
+      };
+
+      try {
+        let error;
+        if (editId) {
+          ({ error } = await supabaseClient
+            .from('admin_ad_scripts')
+            .update(record)
+            .eq('id', editId));
+        } else {
+          ({ error } = await supabaseClient
+            .from('admin_ad_scripts')
+            .insert([record]));
+        }
+
+        if (error) throw error;
+
+        showToast(editId ? 'Script updated successfully' : 'Script created successfully', 'success');
+        closeScriptModal();
+        await loadAdScripts();
+        updateDashboard();
+      } catch (err) {
+        console.error('Save script error:', err);
+        showToast('Failed to save script: ' + err.message, 'error');
+      }
+    }
+
+    async function toggleScriptActive(id) {
+      const script = adScripts.find(s => s.id === id);
+      if (!script) return;
+
+      try {
+        const { error } = await supabaseClient
+          .from('admin_ad_scripts')
+          .update({ active: !script.active })
+          .eq('id', id);
+
+        if (error) throw error;
+
+        showToast(`Script ${!script.active ? 'activated' : 'deactivated'}`, 'success');
+        await loadAdScripts();
+        updateDashboard();
+      } catch (err) {
+        console.error('Toggle script error:', err);
+        showToast('Failed to toggle script', 'error');
+      }
+    }
+
+    function confirmDeleteScript(id) {
+      const script = adScripts.find(s => s.id === id);
+      if (!script) return;
+      openConfirmModal('Are you sure you want to delete the script "' + escapeHtml(script.name) + '"?', async () => {
+        try {
+          const { error } = await supabaseClient
+            .from('admin_ad_scripts')
+            .delete()
+            .eq('id', id);
+
+          if (error) throw error;
+
+          showToast('Script deleted successfully', 'success');
+          await loadAdScripts();
+          updateDashboard();
+        } catch (err) {
+          console.error('Delete script error:', err);
+          showToast('Failed to delete script', 'error');
+        }
+      });
+    }
+
+    // ===== TV CHANNELS MANAGEMENT =====
+    async function loadChannels() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('tv_channels')
+          .select('*')
+          .order('sort_order', { ascending: true });
+
+        if (error) {
+          console.error('Error loading channels:', error);
+          showToast('Failed to load channels from Supabase', 'error');
+          return;
+        }
+
+        channels = data || [];
+        renderChannelList();
+      } catch (err) {
+        console.error('Channels load error:', err);
+      }
+    }
+
+    function renderChannelList() {
+      const container = document.getElementById('channelList');
+      if (!container) return;
+      
+      const filterCat = document.getElementById('channelCategoryFilter')?.value || 'all';
+      const filtered = filterCat === 'all' ? channels : channels.filter(c => c.category === filterCat);
+      
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-aitv-muted">
+            <i class="fas fa-tv text-3xl mb-3"></i>
+            <p class="text-sm">No channels found.</p>
+            <p class="text-xs mt-1">Click "Add Channel" to create one.</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(ch => {
+        const typeBadge = {
+          'hls': '<span class="badge-platform badge-adsterra">HLS</span>',
+          'iframe': '<span class="badge-platform badge-monetag">YouTube</span>',
+          'dash': '<span class="badge-platform badge-propellerads">DASH</span>',
+          'mp4': '<span class="badge-platform badge-custom">MP4</span>',
+          'upload': '<span class="badge-platform badge-monetag">Upload</span>',
+          'm3u_playlist': '<span class="badge-platform badge-propellerads">M3U</span>'
+        }[ch.stream_type] || '<span class="badge-platform badge-adsterra">HLS</span>';
+
+        return `
+          <div class="channel-item" style="background:#0f0f1a;border:1px solid #1a1a2e;border-radius:10px;padding:16px;transition:all 0.2s;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+            <div style="width:48px;height:48px;border-radius:8px;overflow:hidden;background:#0a0a0f;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+              ${ch.logo_url ? `<img src="${ch.logo_url}" alt="" style="width:100%;height:100%;object-fit:contain;">` : 
+                ch.logo_data ? `<img src="${ch.logo_data}" alt="" style="width:100%;height:100%;object-fit:contain;">` :
+                '<i class="fas fa-tv text-aitv-neon-blue"></i>'}
+            </div>
+            <div style="flex:1;min-width:120px;">
+              <p class="text-sm font-semibold text-white">${escapeHtml(ch.channel_name)}</p>
+              <div class="flex items-center gap-2 mt-1 flex-wrap">
+                <span class="badge-pos">${escapeHtml(ch.category)}</span>
+                ${typeBadge}
+                ${!ch.is_visible ? '<span class="badge badge-off">Hidden</span>' : ''}
+              </div>
+              <p class="text-xs text-aitv-muted mt-1 truncate" style="max-width:300px;">${ch.stream_type === 'upload' ? (ch.media_filename || 'Uploaded file') : ch.stream_type === 'm3u_playlist' ? (ch.stream_url || 'M3U Playlist') : (ch.stream_url || 'No URL')}</p>
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;">
+              <button onclick="previewChannel('${ch.id}')" class="btn-edit text-xs">
+                <i class="fas fa-play mr-1"></i> Preview
+              </button>
+              <button onclick="editChannel('${ch.id}')" class="btn-edit text-xs">
+                <i class="fas fa-edit mr-1"></i> Edit
+              </button>
+              <button onclick="toggleChannelVisibility('${ch.id}', ${!ch.is_visible})" class="btn-ghost text-xs">
+                <i class="fas fa-${ch.is_visible ? 'eye-slash' : 'eye'} mr-1"></i> ${ch.is_visible ? 'Hide' : 'Show'}
+              </button>
+              <button onclick="confirmDeleteChannel('${ch.id}')" class="btn-danger text-xs">
+                <i class="fas fa-trash mr-1"></i> Delete
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function filterChannelsByCategory() {
+      renderChannelList();
+    }
+
+    function openChannelModal(editId) {
+      document.getElementById('channelModal').classList.remove('hidden');
+      document.getElementById('channelModalTitle').textContent = editId ? 'Edit Channel' : 'Add Channel';
+      document.getElementById('channelEditId').value = editId || '';
+      
+      if (!editId) {
+        // Reset form
+        document.getElementById('channelForm').reset();
+        document.getElementById('channelMediaData').value = '';
+        document.getElementById('channelMediaMime').value = '';
+        document.getElementById('channelMediaFilename').value = '';
+        document.getElementById('channelLogoData').value = '';
+        document.getElementById('channelVisibleToggle').classList.add('active');
+        document.getElementById('channelStreamType').value = 'hls';
+        // Reset M3U import state
+        m3uImportedChannels = [];
+        document.getElementById('m3uImportedChannels').classList.add('hidden');
+        document.getElementById('m3uFetchProgress').classList.add('hidden');
+        document.getElementById('m3uPlaylistUrl').value = '';
+        toggleStreamInput();
+      }
+    }
+
+    function closeChannelModal() {
+      document.getElementById('channelModal').classList.add('hidden');
+      // Reset M3U import state on close
+      m3uImportedChannels = [];
+    }
+
+    function toggleStreamInput() {
+      const streamType = document.getElementById('channelStreamType').value;
+      const urlField = document.getElementById('streamUrlField');
+      const uploadField = document.getElementById('uploadField');
+      const m3uField = document.getElementById('m3uPlaylistField');
+      const nameField = document.getElementById('channelNameField');
+      const logoFields = document.getElementById('channelLogoFields');
+      const sortFields = document.getElementById('channelSortFields');
+      const saveButtons = document.getElementById('channelSaveButtons');
+      const hint = document.getElementById('streamUrlHint');
+      
+      // Reset all fields visibility
+      urlField.classList.add('hidden');
+      uploadField.classList.add('hidden');
+      m3uField.classList.add('hidden');
+      nameField.classList.remove('hidden');
+      logoFields.classList.remove('hidden');
+      sortFields.classList.remove('hidden');
+      saveButtons.classList.remove('hidden');
+      
+      if (streamType === 'upload') {
+        uploadField.classList.remove('hidden');
+      } else if (streamType === 'm3u_playlist') {
+        // M3U playlist mode: hide name, logo, sort, save buttons (M3U has its own save flow)
+        m3uField.classList.remove('hidden');
+        nameField.classList.add('hidden');
+        logoFields.classList.add('hidden');
+        sortFields.classList.add('hidden');
+        saveButtons.classList.add('hidden');
+        // Make channel name not required in this mode
+        document.getElementById('channelName').removeAttribute('required');
+      } else {
+        urlField.classList.remove('hidden');
+        
+        if (streamType === 'iframe') {
+          hint.textContent = 'For YouTube Live: use embed URL format (https://www.youtube.com/embed/VIDEO_ID)';
+        } else if (streamType === 'hls') {
+          hint.textContent = 'Enter the M3U8 stream URL';
+        } else if (streamType === 'dash') {
+          hint.textContent = 'Enter the MPD (DASH) stream URL';
+        } else {
+          hint.textContent = 'Enter the direct video URL (MP4, WebM, etc.)';
+        }
+      }
+      
+      // Restore required attribute for non-m3u types
+      if (streamType !== 'm3u_playlist') {
+        document.getElementById('channelName').setAttribute('required', 'required');
+      }
+    }
+
+    // Sanitize uploaded file - check for malicious content
+    function sanitizeFileContent(base64Data, mimeType) {
+      // Check for script tags in base64 decoded content (for text-based files)
+      if (mimeType.startsWith('text/') || mimeType.includes('m3u') || mimeType.includes('xml')) {
+        try {
+          const decoded = atob(base64Data.split(',')[1] || base64Data);
+          if (decoded.includes('<script') || decoded.includes('javascript:') || decoded.includes('onerror=')) {
+            return null; // Reject
+          }
+        } catch(e) {}
+      }
+      return base64Data;
+    }
+
+    function handleChannelFileUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      
+      // Size limit: 50MB
+      if (file.size > 50 * 1024 * 1024) {
+        showToast('File too large. Max 50MB allowed.', 'error');
+        input.value = '';
+        return;
+      }
+      
+      const progressDiv = document.getElementById('uploadProgress');
+      const progressBar = document.getElementById('uploadProgressBar');
+      const progressText = document.getElementById('uploadProgressText');
+      progressDiv.classList.remove('hidden');
+      progressBar.style.width = '0%';
+      progressText.textContent = 'Reading file...';
+      
+      const reader = new FileReader();
+      reader.onprogress = function(e) {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          progressBar.style.width = pct + '%';
+          progressText.textContent = 'Reading... ' + pct + '%';
+        }
+      };
+      reader.onload = function(e) {
+        const base64 = e.target.result;
+        const sanitized = sanitizeFileContent(base64, file.type);
+        if (!sanitized) {
+          showToast('File contains potentially dangerous content. Upload rejected.', 'error');
+          progressDiv.classList.add('hidden');
+          input.value = '';
+          return;
+        }
+        document.getElementById('channelMediaData').value = sanitized;
+        document.getElementById('channelMediaMime').value = file.type || 'video/mp4';
+        document.getElementById('channelMediaFilename').value = file.name;
+        progressBar.style.width = '100%';
+        progressText.textContent = 'Upload ready!';
+        setTimeout(() => progressDiv.classList.add('hidden'), 2000);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleLogoUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      
+      // Size limit: 2MB for logo
+      if (file.size > 2 * 1024 * 1024) {
+        showToast('Logo too large. Max 2MB allowed.', 'error');
+        input.value = '';
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64 = e.target.result;
+        const sanitized = sanitizeFileContent(base64, file.type);
+        if (!sanitized) {
+          showToast('Logo file rejected due to security check.', 'error');
+          input.value = '';
+          return;
+        }
+        document.getElementById('channelLogoData').value = sanitized;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ===== M3U PLAYLIST IMPORT SYSTEM =====
+    let m3uImportedChannels = []; // Stores parsed M3U channels
+
+    async function fetchM3UPlaylist() {
+      const url = document.getElementById('m3uPlaylistUrl').value.trim();
+      if (!url) {
+        showToast('Please enter an M3U playlist URL', 'error');
+        return;
+      }
+      
+      // Validate URL format
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        showToast('Please enter a valid URL starting with http:// or https://', 'error');
+        return;
+      }
+      
+      const progressDiv = document.getElementById('m3uFetchProgress');
+      const statusText = document.getElementById('m3uFetchStatus');
+      const fetchBtn = document.getElementById('fetchM3UBtn');
+      const importDiv = document.getElementById('m3uImportedChannels');
+      
+      // Show progress, disable button
+      progressDiv.classList.remove('hidden');
+      importDiv.classList.add('hidden');
+      fetchBtn.disabled = true;
+      statusText.textContent = 'Fetching playlist...';
+      
+      try {
+        // Fetch the M3U file via a CORS proxy or directly
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+        }
+        
+        statusText.textContent = 'Parsing channels...';
+        const m3uText = await response.text();
+        
+        // Parse the M3U content
+        m3uImportedChannels = parseM3U(m3uText);
+        
+        if (m3uImportedChannels.length === 0) {
+          showToast('No channels found in this M3U playlist', 'error');
+          progressDiv.classList.add('hidden');
+          fetchBtn.disabled = false;
+          return;
+        }
+        
+        statusText.textContent = 'Found ' + m3uImportedChannels.length + ' channels!';
+        
+        // Render the imported channels grid
+        renderM3UChannelGrid();
+        importDiv.classList.remove('hidden');
+        progressDiv.classList.add('hidden');
+        fetchBtn.disabled = false;
+        
+        showToast('Found ' + m3uImportedChannels.length + ' channels! Review and save.', 'success');
+      } catch (err) {
+        console.error('M3U fetch error:', err);
+        
+        // Try with CORS proxy as fallback
+        statusText.textContent = 'Direct fetch failed, trying CORS proxy...';
+        try {
+          const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+          const proxyResponse = await fetch(proxyUrl);
+          if (!proxyResponse.ok) throw new Error('Proxy also failed');
+          
+          const m3uText = await proxyResponse.text();
+          m3uImportedChannels = parseM3U(m3uText);
+          
+          if (m3uImportedChannels.length === 0) {
+            showToast('No channels found in this M3U playlist', 'error');
+            progressDiv.classList.add('hidden');
+            fetchBtn.disabled = false;
+            return;
+          }
+          
+          statusText.textContent = 'Found ' + m3uImportedChannels.length + ' channels!';
+          renderM3UChannelGrid();
+          importDiv.classList.remove('hidden');
+          progressDiv.classList.add('hidden');
+          fetchBtn.disabled = false;
+          showToast('Found ' + m3uImportedChannels.length + ' channels via proxy! Review and save.', 'success');
+        } catch (proxyErr) {
+          showToast('Failed to fetch playlist. Check the URL or try a different link.', 'error');
+          progressDiv.classList.add('hidden');
+          fetchBtn.disabled = false;
+        }
+      }
+    }
+    
+    // Parse M3U file content - extract channel name, logo, group, stream URL from #EXTINF
+    function parseM3U(m3uText) {
+      const channels = [];
+      const lines = m3uText.split('\n');
+      let currentExtinf = null;
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        if (line.startsWith('#EXTINF:')) {
+          currentExtinf = {};
+          
+          // Extract tvg-logo (channel logo URL)
+          const logoMatch = line.match(/tvg-logo="([^"]*)"/i);
+          currentExtinf.logo = logoMatch ? logoMatch[1] : '';
+          
+          // Extract tvg-name (channel name alternative)
+          const tvgNameMatch = line.match(/tvg-name="([^"]*)"/i);
+          currentExtinf.tvgName = tvgNameMatch ? tvgNameMatch[1] : '';
+          
+          // Extract tvg-id
+          const tvgIdMatch = line.match(/tvg-id="([^"]*)"/i);
+          currentExtinf.tvgId = tvgIdMatch ? tvgIdMatch[1] : '';
+          
+          // Extract group-title (category)
+          const groupMatch = line.match(/group-title="([^"]*)"/i);
+          currentExtinf.group = groupMatch ? groupMatch[1] : '';
+          
+          // Extract channel name (after the last comma on the EXTINF line)
+          const commaIdx = line.lastIndexOf(',');
+          if (commaIdx !== -1 && commaIdx < line.length - 1) {
+            currentExtinf.name = line.substring(commaIdx + 1).trim();
+          } else {
+            currentExtinf.name = currentExtinf.tvgName || 'Unknown Channel';
+          }
+          
+          // Clean up channel name - remove unwanted characters
+          currentExtinf.name = currentExtinf.name.replace(/\s+/g, ' ').trim();
+          if (!currentExtinf.name) {
+            currentExtinf.name = currentExtinf.tvgName || 'Unknown Channel';
+          }
+          
+        } else if (currentExtinf && line && !line.startsWith('#')) {
+          // This is the stream URL line after EXTINF
+          currentExtinf.url = line;
+          
+          // Determine stream type based on URL
+          const urlLower = line.toLowerCase();
+          if (urlLower.includes('.m3u8') || urlLower.includes('m3u8')) {
+            currentExtinf.streamType = 'hls';
+          } else if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) {
+            currentExtinf.streamType = 'iframe';
+            // Convert YouTube watch URLs to embed URLs
+            if (urlLower.includes('youtube.com/watch')) {
+              const vidMatch = line.match(/[?&]v=([^&]+)/);
+              if (vidMatch) {
+                currentExtinf.url = 'https://www.youtube.com/embed/' + vidMatch[1];
+              }
+            } else if (urlLower.includes('youtu.be/')) {
+              const vidMatch = line.match(/youtu\.be\/([^?&]+)/);
+              if (vidMatch) {
+                currentExtinf.url = 'https://www.youtube.com/embed/' + vidMatch[1];
+              }
+            }
+          } else if (urlLower.includes('.mpd')) {
+            currentExtinf.streamType = 'dash';
+          } else if (urlLower.includes('.mp4') || urlLower.includes('.mkv') || urlLower.includes('.avi') || urlLower.includes('.webm')) {
+            currentExtinf.streamType = 'mp4';
+          } else {
+            // Default to HLS for unknown stream URLs
+            currentExtinf.streamType = 'hls';
+          }
+          
+          channels.push({...currentExtinf, selected: true});
+          currentExtinf = null;
+        }
+      }
+      
+      return channels;
+    }
+    
+    // Render the M3U imported channels grid with delete and modify actions
+    function renderM3UChannelGrid() {
+      const grid = document.getElementById('m3uChannelGrid');
+      const countEl = document.getElementById('m3uChannelCount');
+      const selectedCount = m3uImportedChannels.filter(c => c.selected).length;
+      countEl.textContent = selectedCount + ' / ' + m3uImportedChannels.length + ' selected';
+      
+      if (m3uImportedChannels.length === 0) {
+        grid.innerHTML = '<div class="text-center py-6 text-aitv-muted"><i class="fas fa-inbox text-2xl mb-2"></i><p class="text-sm">No channels imported yet</p></div>';
+        return;
+      }
+      
+      grid.innerHTML = m3uImportedChannels.map((ch, idx) => {
+        const typeBadge = {
+          'hls': '<span class="badge-platform badge-adsterra" style="font-size:9px;">HLS</span>',
+          'iframe': '<span class="badge-platform badge-monetag" style="font-size:9px;">YT</span>',
+          'dash': '<span class="badge-platform badge-propellerads" style="font-size:9px;">DASH</span>',
+          'mp4': '<span class="badge-platform badge-custom" style="font-size:9px;">MP4</span>'
+        }[ch.streamType] || '<span class="badge-platform badge-adsterra" style="font-size:9px;">HLS</span>';
+        
+        return `
+          <div class="flex items-center gap-3 p-2 rounded-lg transition-all" style="background:${ch.selected ? '#0f0f1a' : '#080810'};border:1px solid ${ch.selected ? '#1a1a2e' : '#0a0a15'};opacity:${ch.selected ? '1' : '0.4'};">
+            <input type="checkbox" ${ch.selected ? 'checked' : ''} onchange="toggleM3UChannel(${idx}, this.checked)" class="w-4 h-4 rounded accent-[#00f3ff] flex-shrink-0 cursor-pointer" />
+            <div style="width:36px;height:36px;border-radius:6px;overflow:hidden;background:#0a0a0f;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+              ${ch.logo ? `<img src="${escapeHtml(ch.logo)}" alt="" style="width:100%;height:100%;object-fit:contain;" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\\'fas fa-tv text-aitv-neon-blue text-xs\\'></i>'">` : '<i class="fas fa-tv text-aitv-neon-blue text-xs"></i>'}
+            </div>
+            <div style="flex:1;min-width:80px;overflow:hidden;">
+              <p class="text-xs font-semibold text-white truncate">${escapeHtml(ch.name)}</p>
+              <div class="flex items-center gap-1 mt-0.5">
+                ${typeBadge}
+                ${ch.group ? '<span class="badge-pos" style="font-size:9px;">' + escapeHtml(ch.group) + '</span>' : ''}
+              </div>
+            </div>
+            <div style="flex:1.5;min-width:100px;max-width:260px;" class="hidden sm:block">
+              <input type="text" value="${escapeHtml(ch.url)}" onchange="updateM3UStreamUrl(${idx}, this.value)" class="admin-input text-xs" style="padding:4px 8px;font-size:11px;background:#080810;" title="${escapeHtml(ch.url)}" />
+            </div>
+            <div class="flex gap-1 flex-shrink-0">
+              <button onclick="previewM3UChannel(${idx})" class="btn-edit text-xs" style="padding:3px 8px;font-size:10px;" title="Preview">
+                <i class="fas fa-play"></i>
+              </button>
+              <button onclick="removeM3UChannel(${idx})" class="btn-danger text-xs" style="padding:3px 8px;font-size:10px;" title="Remove">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+    
+    function toggleM3UChannel(idx, checked) {
+      m3uImportedChannels[idx].selected = checked;
+      renderM3UChannelGrid();
+    }
+    
+    function selectAllM3UChannels() {
+      m3uImportedChannels.forEach(c => c.selected = true);
+      renderM3UChannelGrid();
+    }
+    
+    function deselectAllM3UChannels() {
+      m3uImportedChannels.forEach(c => c.selected = false);
+      renderM3UChannelGrid();
+    }
+    
+    function updateM3UStreamUrl(idx, newUrl) {
+      m3uImportedChannels[idx].url = newUrl.trim();
+    }
+    
+    function removeM3UChannel(idx) {
+      m3uImportedChannels.splice(idx, 1);
+      renderM3UChannelGrid();
+    }
+    
+    function previewM3UChannel(idx) {
+      const ch = m3uImportedChannels[idx];
+      if (!ch || !ch.url) {
+        showToast('No stream URL available', 'error');
+        return;
+      }
+      
+      const video = document.getElementById('previewVideo');
+      const iframe = document.getElementById('previewIframe');
+      const placeholder = document.getElementById('previewPlaceholder');
+      
+      // Reset
+      video.style.display = 'none';
+      iframe.style.display = 'none';
+      iframe.src = '';
+      if (window._previewHls) { try { window._previewHls.destroy(); } catch(e) {} window._previewHls = null; }
+      video.src = '';
+      placeholder.style.display = 'flex';
+      
+      if (ch.streamType === 'iframe') {
+        iframe.style.display = 'block';
+        iframe.src = ch.url;
+        placeholder.style.display = 'none';
+      } else if (ch.streamType === 'hls') {
+        video.style.display = 'block';
+        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+          window._previewHls = new Hls();
+          window._previewHls.attachMedia(video);
+          window._previewHls.loadSource(ch.url);
+          window._previewHls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play().catch(e => console.log('Preview play blocked', e));
+          });
+        } else {
+          video.src = ch.url;
+          video.play().catch(e => console.log('Preview play blocked', e));
+        }
+        placeholder.style.display = 'none';
+      } else {
+        video.style.display = 'block';
+        video.src = ch.url;
+        video.play().catch(e => console.log('Preview play blocked', e));
+        placeholder.style.display = 'none';
+      }
+      
+      showToast('Previewing: ' + ch.name, 'info');
+    }
+    
+    // Batch save all selected M3U channels to Supabase
+    async function saveM3UChannels() {
+      const selectedChannels = m3uImportedChannels.filter(c => c.selected);
+      if (selectedChannels.length === 0) {
+        showToast('No channels selected to save', 'error');
+        return;
+      }
+      
+      const category = document.getElementById('channelCategory').value;
+      const saveBtn = document.getElementById('saveM3UBtn');
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fas fa-spinner spinner mr-1"></i> Saving...';
+      
+      // Map M3U group to category if possible
+      const groupToCategory = {
+        'sports': 'Sports', 'sport': 'Sports',
+        'news': 'News',
+        'cartoon': 'Cartoon', 'kids': 'Cartoon', 'animation': 'Cartoon',
+        'natok': 'Natok', 'drama': 'Natok', 'entertainment': 'Natok',
+        'default': 'Default', 'general': 'Default'
+      };
+      
+      const channelRecords = selectedChannels.map((ch, i) => {
+        // Determine category: try to map M3U group, fallback to admin selected category
+        let chCategory = category;
+        if (ch.group) {
+          const groupLower = ch.group.toLowerCase().trim();
+          for (const [key, val] of Object.entries(groupToCategory)) {
+            if (groupLower.includes(key)) {
+              chCategory = val;
+              break;
+            }
+          }
+        }
+        
+        return {
+          channel_name: ch.name || 'Unknown Channel',
+          category: chCategory,
+          stream_type: ch.streamType || 'hls',
+          stream_url: ch.url || '',
+          logo_url: ch.logo || '',
+          is_visible: true,
+          sort_order: i
+        };
+      });
+      
+      try {
+        // Insert in batches of 50 to avoid Supabase limits
+        const batchSize = 50;
+        let savedCount = 0;
+        
+        for (let i = 0; i < channelRecords.length; i += batchSize) {
+          const batch = channelRecords.slice(i, i + batchSize);
+          const { error } = await supabaseClient
+            .from('tv_channels')
+            .insert(batch);
+          
+          if (error) {
+            console.error('Batch insert error:', error);
+            showToast('Error saving batch: ' + error.message, 'error');
+            // Continue with next batch anyway
+          } else {
+            savedCount += batch.length;
+          }
+        }
+        
+        if (savedCount > 0) {
+          showToast(savedCount + ' channels saved successfully!', 'success');
+          m3uImportedChannels = [];
+          renderM3UChannelGrid();
+          document.getElementById('m3uImportedChannels').classList.add('hidden');
+          document.getElementById('m3uPlaylistUrl').value = '';
+          await loadChannels();
+          updateDashboard();
+        }
+        
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save mr-1"></i> Save All to Database';
+      } catch (err) {
+        console.error('Save M3U channels error:', err);
+        showToast('Failed to save channels', 'error');
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save mr-1"></i> Save All to Database';
+      }
+    }
+
+    async function saveChannel(event) {
+      event.preventDefault();
+      
+      const editId = document.getElementById('channelEditId').value;
+      const name = document.getElementById('channelName').value.trim();
+      const category = document.getElementById('channelCategory').value;
+      const streamType = document.getElementById('channelStreamType').value;
+      const streamUrl = document.getElementById('channelStreamUrl').value.trim();
+      const logoUrl = document.getElementById('channelLogoUrl').value.trim();
+      const logoData = document.getElementById('channelLogoData').value;
+      const mediaData = document.getElementById('channelMediaData').value;
+      const mediaMime = document.getElementById('channelMediaMime').value;
+      const mediaFilename = document.getElementById('channelMediaFilename').value;
+      const sortOrder = parseInt(document.getElementById('channelSortOrder').value) || 0;
+      const isVisible = document.getElementById('channelVisibleToggle').classList.contains('active');
+      
+      if (!name && streamType !== 'm3u_playlist') {
+        showToast('Channel name is required', 'error');
+        return;
+      }
+      
+      if (streamType !== 'upload' && streamType !== 'm3u_playlist' && !streamUrl) {
+        showToast('Stream URL is required for non-upload channels', 'error');
+        return;
+      }
+      
+      if (streamType === 'upload' && !mediaData && !editId) {
+        showToast('Please upload a media file', 'error');
+        return;
+      }
+      
+      const channelData = {
+        channel_name: name,
+        category: category,
+        stream_type: streamType,
+        stream_url: streamType === 'upload' ? '' : streamUrl,
+        logo_url: logoUrl,
+        logo_data: logoData,
+        sort_order: sortOrder,
+        is_visible: isVisible
+      };
+      
+      // Only include media data if new upload (don't overwrite with empty)
+      if (mediaData) {
+        channelData.media_data = mediaData;
+        channelData.media_mime = mediaMime;
+        channelData.media_filename = mediaFilename;
+      }
+      
+      try {
+        let result;
+        if (editId) {
+          result = await supabaseClient
+            .from('tv_channels')
+            .update(channelData)
+            .eq('id', editId);
+        } else {
+          result = await supabaseClient
+            .from('tv_channels')
+            .insert(channelData);
+        }
+        
+        if (result.error) {
+          showToast('Error saving channel: ' + result.error.message, 'error');
+          return;
+        }
+        
+        showToast(editId ? 'Channel updated!' : 'Channel added!', 'success');
+        closeChannelModal();
+        await loadChannels();
+        updateDashboard();
+      } catch (err) {
+        showToast('Failed to save channel: ' + err.message, 'error');
+      }
+    }
+
+    async function editChannel(id) {
+      const ch = channels.find(c => c.id === id);
+      if (!ch) return;
+      
+      openChannelModal(id);
+      
+      document.getElementById('channelName').value = ch.channel_name || '';
+      document.getElementById('channelCategory').value = ch.category || 'Default';
+      document.getElementById('channelStreamType').value = ch.stream_type || 'hls';
+      document.getElementById('channelStreamUrl').value = ch.stream_url || '';
+      document.getElementById('channelLogoUrl').value = ch.logo_url || '';
+      document.getElementById('channelSortOrder').value = ch.sort_order || 0;
+      
+      toggleStreamInput();
+      
+      if (ch.is_visible) {
+        document.getElementById('channelVisibleToggle').classList.add('active');
+      } else {
+        document.getElementById('channelVisibleToggle').classList.remove('active');
+      }
+    }
+
+    async function toggleChannelVisibility(id, newVisible) {
+      try {
+        const { error } = await supabaseClient
+          .from('tv_channels')
+          .update({ is_visible: newVisible })
+          .eq('id', id);
+        
+        if (error) {
+          showToast('Error updating visibility: ' + error.message, 'error');
+          return;
+        }
+        
+        showToast(newVisible ? 'Channel shown' : 'Channel hidden', 'info');
+        await loadChannels();
+      } catch (err) {
+        showToast('Failed to update visibility', 'error');
+      }
+    }
+
+    async function deleteChannel(id) {
+      try {
+        const { error } = await supabaseClient
+          .from('tv_channels')
+          .delete()
+          .eq('id', id);
+        
+        if (error) {
+          showToast('Error deleting channel: ' + error.message, 'error');
+          return;
+        }
+        
+        showToast('Channel deleted', 'success');
+        await loadChannels();
+        updateDashboard();
+      } catch (err) {
+        showToast('Failed to delete channel', 'error');
+      }
+    }
+
+    function confirmDeleteChannel(id) {
+      document.getElementById('confirmText').textContent = 'Are you sure you want to delete this channel?';
+      document.getElementById('confirmModal').classList.remove('hidden');
+      document.getElementById('confirmYes').onclick = () => {
+        deleteChannel(id);
+        closeConfirmModal();
+      };
+    }
+
+    function previewChannel(id) {
+      const ch = channels.find(c => c.id === id);
+      if (!ch) return;
+      
+      const video = document.getElementById('previewVideo');
+      const iframe = document.getElementById('previewIframe');
+      const placeholder = document.getElementById('previewPlaceholder');
+      
+      // Reset
+      video.style.display = 'none';
+      iframe.style.display = 'none';
+      iframe.src = '';
+      if (window._previewHls) { try { window._previewHls.destroy(); } catch(e) {} window._previewHls = null; }
+      video.src = '';
+      
+      placeholder.style.display = 'flex';
+      
+      if (ch.stream_type === 'iframe' && ch.stream_url) {
+        iframe.style.display = 'block';
+        iframe.src = ch.stream_url;
+        placeholder.style.display = 'none';
+      } else if (ch.stream_type === 'upload' && ch.media_data) {
+        try {
+          const byteString = atob(ch.media_data.split(',')[1] || ch.media_data);
+          const mimeString = ch.media_mime || 'video/mp4';
+          const ab = new ArrayBuffer(byteString.length);
+          const ia = new Uint8Array(ab);
+          for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+          const blob = new Blob([ab], { type: mimeString });
+          const blobUrl = URL.createObjectURL(blob);
+          if (window._lastPreviewBlobUrl) URL.revokeObjectURL(window._lastPreviewBlobUrl);
+          window._lastPreviewBlobUrl = blobUrl;
+          video.style.display = 'block';
+          video.src = blobUrl;
+          video.play().catch(e => console.log('Preview play blocked', e));
+          placeholder.style.display = 'none';
+        } catch(e) {
+          showToast('Preview error: ' + e.message, 'error');
+        }
+      } else if (ch.stream_url) {
+        video.style.display = 'block';
+        const urlLower = ch.stream_url.toLowerCase();
+        
+        if (urlLower.includes('.m3u8') && typeof Hls !== 'undefined' && Hls.isSupported()) {
+          window._previewHls = new Hls();
+          window._previewHls.attachMedia(video);
+          window._previewHls.loadSource(ch.stream_url);
+          window._previewHls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play().catch(e => console.log('Preview play blocked', e));
+          });
+        } else {
+          video.src = ch.stream_url;
+          video.play().catch(e => console.log('Preview play blocked', e));
+        }
+        placeholder.style.display = 'none';
+      } else {
+        showToast('No stream URL available for preview', 'error');
+      }
+    }
+
+    // Add HLS.js to admin panel for preview player
+    // Load it dynamically if not already present
+    if (typeof Hls === 'undefined') {
+      const hlsScript = document.createElement('script');
+      hlsScript.src = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.7';
+      hlsScript.crossOrigin = 'anonymous';
+      document.head.appendChild(hlsScript);
+    }
+
+    // ===== SECURITY / EMAIL WHITELIST =====
+    async function saveAllowedEmails() {
+      const emails = document.getElementById('allowedEmailsInput').value.trim();
+      if (!emails) {
+        showToast('Please enter at least one email address', 'error');
+        return;
+      }
+
+      // Validate emails
+      const emailList = emails.split(',').map(e => e.trim()).filter(e => e.length > 0);
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const invalidEmails = emailList.filter(e => !emailRegex.test(e));
+
+      if (invalidEmails.length > 0) {
+        showToast('Invalid email format: ' + invalidEmails.join(', '), 'error');
+        return;
+      }
+
+      // Check that current user's email is in the list
+      if (currentUser && currentUser.email) {
+        if (!emailList.map(e => e.toLowerCase()).includes(currentUser.email.toLowerCase())) {
+          if (!confirm('Warning: Your email (' + currentUser.email + ') is not in the list. This will lock you out! Continue anyway?')) {
+            return;
+          }
+        }
+      }
+
+      try {
+        const { error } = await supabaseClient
+          .from('admin_settings')
+          .upsert({
+            key: 'admin_allowed_emails',
+            value: emails,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'key' });
+
+        if (error) throw error;
+
+        settings.admin_allowed_emails = emails;
+        showToast('Allowed emails updated successfully', 'success');
+      } catch (err) {
+        console.error('Save emails error:', err);
+        showToast('Failed to save allowed emails', 'error');
+      }
+    }
+
+    function addCurrentUserEmail() {
+      if (!currentUser || !currentUser.email) {
+        showToast('No user email found', 'error');
+        return;
+      }
+
+      const input = document.getElementById('allowedEmailsInput');
+      const currentEmails = input.value.split(',').map(e => e.trim().toLowerCase()).filter(e => e.length > 0);
+
+      if (currentEmails.includes(currentUser.email.toLowerCase())) {
+        showToast('Your email is already in the list', 'info');
+        return;
+      }
+
+      if (input.value.trim()) {
+        input.value = input.value.trim() + ', ' + currentUser.email;
+      } else {
+        input.value = currentUser.email;
+      }
+
+      showToast('Your email added. Click Save to apply.', 'info');
+    }
+
+    // ===== CONFIRM MODAL =====
+    let confirmCallback = null;
+
+    function openConfirmModal(text, callback) {
+      document.getElementById('confirmText').textContent = text;
+      confirmCallback = callback;
+      document.getElementById('confirmModal').classList.remove('hidden');
+
+      // Remove old listener and add new one
+      const yesBtn = document.getElementById('confirmYes');
+      const newBtn = yesBtn.cloneNode(true);
+      yesBtn.parentNode.replaceChild(newBtn, yesBtn);
+      newBtn.id = 'confirmYes';
+      newBtn.addEventListener('click', async () => {
+        if (confirmCallback) {
+          await confirmCallback();
+        }
+        closeConfirmModal();
+      });
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirmModal').classList.add('hidden');
+      confirmCallback = null;
+    }
+
+    // ===== TOAST =====
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+
+      const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        info: 'fa-info-circle'
+      };
+
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i> ${escapeHtml(message)}`;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 3000);
+    }
+
+    // ===== UTILITY =====
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      try {
+        const date = new Date(dateStr + 'T00:00:00');
+        return date.toLocaleDateString('en-US', {
+          weekday: 'short',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+      } catch (e) {
+        return dateStr;
+      }
+    }
+  </script>
+</body>
+</html>
