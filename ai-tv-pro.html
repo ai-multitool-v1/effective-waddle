@@ -715,8 +715,11 @@ input,textarea{
 
 /* === Ad Script Container Styles === */
 .ad-script-container {
- width: 100%; min-height: 50px; text-align: center;
+ width: 100%; text-align: center;
  overflow: visible !important; position: relative;
+}
+.ad-script-container:empty {
+ display: none;
 }
 .ad-script-container iframe {
  max-width: 100%; border: none;
@@ -726,7 +729,6 @@ input,textarea{
 }
 .ad-script-container ins {
  display: block !important;
- min-height: 50px;
 }
 
 /* === Channel card action buttons (Feature 2: Favorites, Feature 6: Pin) === */
@@ -2050,13 +2052,20 @@ async function loadAdScripts() {
   await new Promise(function(resolve) { setTimeout(resolve, 500); });
 
   // Separate scripts by position
+  // Supported positions: menu, player, sidebar, worldcup, global, both
   var menuScripts = [];
   var worldcupScripts = [];
   var bothScripts = [];
+  var sidebarScripts = [];
+  var globalScripts = [];
+  var playerScripts = [];
   scripts.forEach(function(script) {
    var pos = script.position || "both";
    if (pos === "menu") menuScripts.push(script);
    else if (pos === "worldcup") worldcupScripts.push(script);
+   else if (pos === "sidebar") sidebarScripts.push(script);
+   else if (pos === "global") globalScripts.push(script);
+   else if (pos === "player") playerScripts.push(script);
    else bothScripts.push(script);
   });
 
@@ -2066,9 +2075,11 @@ async function loadAdScripts() {
   // Ad scripts are only injected into sidebar and worldcup modal.
 
   // --- STEP 4: INJECT INTO SIDEBAR ---
+  // Sidebar gets: scripts with position "sidebar" + "menu" + "both"
   var sidebarBody = document.querySelector("#settingsSidebar .sidebar-body");
   if (sidebarBody) {
-   mainPageScripts.forEach(function(script) {
+   var allSidebarScripts = sidebarScripts.concat(menuScripts, bothScripts);
+   allSidebarScripts.forEach(function(script) {
     var scriptContainer = document.createElement("div");
     scriptContainer.id = "adScript_sidebar_" + script.id;
     scriptContainer.className = "sidebar-section mb-3 ad-script-container";
@@ -2094,9 +2105,51 @@ async function loadAdScripts() {
    }
   }
 
-  // --- STEP 6: INJECT BODY-LEVEL SCRIPTS ---
+  // --- STEP 6: INJECT GLOBAL POSITION SCRIPTS ---
+  // Scripts with position "global" get injected directly into document.body
+  // These are typically vignette, push notification, popunder, and other site-wide ad scripts
+  if (globalScripts.length > 0) {
+   globalScripts.forEach(function(script) {
+    var code = script.script_code || '';
+    if (!code) return;
+    var alreadyInjected = document.getElementById("adScript_global_" + script.id);
+    if (!alreadyInjected) {
+     var pageContainer = document.createElement("div");
+     pageContainer.id = "adScript_global_" + script.id;
+     pageContainer.className = "ad-script-container";
+     pageContainer.style.cssText = "width:100%;text-align:center;overflow:visible;";
+     document.body.appendChild(pageContainer);
+     injectAdScript(pageContainer, code);
+     console.log("[AdScripts] Injected global-position script:", script.name);
+    }
+   });
+  }
+
+  // --- STEP 7: INJECT PLAYER POSITION SCRIPTS ---
+  // Scripts with position "player" get injected near the player area
+  if (playerScripts.length > 0) {
+   var playerPanel = document.getElementById("playerPanel");
+   if (playerPanel) {
+    playerScripts.forEach(function(script) {
+     var code = script.script_code || '';
+     if (!code) return;
+     var alreadyInjected = document.getElementById("adScript_player_" + script.id);
+     if (!alreadyInjected) {
+      var playerAdDiv = document.createElement("div");
+      playerAdDiv.id = "adScript_player_" + script.id;
+      playerAdDiv.className = "ad-script-container";
+      playerAdDiv.style.cssText = "width:100%;text-align:center;overflow:visible;";
+      playerPanel.appendChild(playerAdDiv);
+      injectAdScript(playerAdDiv, code);
+      console.log("[AdScripts] Injected player-position script:", script.name);
+     }
+    });
+   }
+  }
+
+  // --- STEP 8: INJECT BODY-LEVEL MIXED SCRIPTS ---
   // For scripts that have external src AND also have HTML containers (mixed content)
-  // These need to be in the body, not head
+  // These need to be in the body, not head (fallback for any position)
   scripts.forEach(function(script) {
    var code = script.script_code || '';
    if (!code) return;
@@ -2107,12 +2160,14 @@ async function loadAdScripts() {
 
    // If the script has external src AND HTML containers (mixed), inject to body
    if (hasExternalSrc && hasHtmlContainer && !hasOnlyScriptTags) {
-    // Check if we already injected this in the top/bottom slots
-    var alreadyInjected = document.getElementById("adScript_menu_" + script.id) ||
-                          document.getElementById("adScript_bottom_" + script.id);
+    // Check if we already injected this in any slot
+    var alreadyInjected = document.getElementById("adScript_sidebar_" + script.id) ||
+                          document.getElementById("adScript_wc_" + script.id) ||
+                          document.getElementById("adScript_global_" + script.id) ||
+                          document.getElementById("adScript_player_" + script.id);
     if (!alreadyInjected) {
      var pageContainer = document.createElement("div");
-     pageContainer.id = "adScript_global_" + script.id;
+     pageContainer.id = "adScript_body_" + script.id;
      pageContainer.className = "ad-script-container";
      pageContainer.style.cssText = "width:100%;text-align:center;overflow:visible;";
      document.body.appendChild(pageContainer);
@@ -4083,10 +4138,11 @@ document.addEventListener("click", function(e) {
  }
 });
 playerWrapper.addEventListener("wheel", function(e) {
- // Only control volume if player was focused (clicked at least once)
- if (!_playerFocused) return;
+ // Always prevent scroll from propagating to channel panel (stops channel change on scroll)
  e.preventDefault();
  e.stopPropagation();
+ // Only control volume if player was focused (clicked at least once)
+ if (!_playerFocused) return;
  var delta = e.deltaY < 0 ? 5 : -5; // +5 for scroll up, -5 for scroll down
  var newVol = parseInt(volumeSlider.value) + delta;
  newVol = Math.max(0, Math.min(100, newVol));
