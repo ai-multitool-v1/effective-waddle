@@ -3247,28 +3247,100 @@ if(isMP4){
  });
 }else if(Hls.isSupported()){
  // HLS playback (default)
- hls=new Hls();hls.attachMedia(videoPlayer);hls.loadSource(ch.url);
- hls.on(Hls.Events.MANIFEST_PARSED,(e,data)=>{if(window._streamLoadTimeout){clearTimeout(window._streamLoadTimeout);window._streamLoadTimeout=null;}playerLoader.classList.add("hidden");playerLoader.classList.remove("loader-offline");var sm=document.getElementById("speedMeter");if(sm)sm.style.display="none";videoPlayer.play().catch(e=>console.log("Auto-play blocked",e));setupQuality(data.levels)});
+ // ============================================================
+ // DVR শুধুমাত্র Buffering-Free Mode ON হলেই কাজ করবে।
+ // OFF থাকলে আগের ডিফল্ট কোড যেমন ছিল তেমনই থাকবে।
+ // ============================================================
+ if(bfModeEnabled){
+  // === Buffering-Free Mode ON → DVR-optimized HLS.js config ===
+  // These settings create a stable 10-second DVR buffer behind live edge
+  // for smooth IPTV playback with minimal buffering interruptions.
+  hls=new Hls({
+   lowLatencyMode: false,        // Disable LL-HLS — we want DVR stability, not low latency
+   liveSyncDuration: 10,         // Stay 10s behind live edge (HLS.js target sync point)
+   liveMaxLatencyDuration: 20,   // Max allowed latency before HLS.js tries to catch up
+   liveDurationInfinity: true,   // Report Infinity duration for live streams
+   maxBufferLength: 60,          // Forward buffer target in seconds
+   maxMaxBufferLength: 120,      // Absolute max forward buffer allowed
+   backBufferLength: 30,         // Keep 30s of back buffer for seeking back
+   maxBufferSize: 60 * 1000 * 1000, // 60MB max buffer size for high-bitrate streams
+   maxBufferHole: 0.5,           // Max gap between segments before considering it a hole
+   highBufferWatchdogPeriod: 2,  // Check for high buffer every 2s
+   nudgeOffset: 0.1,            // Small nudge when player falls behind
+   nudgeMaxRetry: 5,            // Max nudge retries before seeking
+   fragLoadingTimeOut: 20000,   // 20s timeout for fragment loading
+   fragLoadingMaxRetry: 6,      // Retry fragment loading up to 6 times
+   fragLoadingMaxRetryTimeout: 64000, // Max retry timeout 64s
+   manifestLoadingTimeOut: 15000,    // 15s timeout for manifest loading
+   manifestLoadingMaxRetry: 4,       // Retry manifest up to 4 times
+   levelLoadingTimeOut: 15000,       // 15s timeout for level loading
+   levelLoadingMaxRetry: 4,          // Retry level loading up to 4 times
+   startFragPrefetch: true,      // Prefetch first fragment for faster start
+   progressive: true,            // Enable progressive loading for faster playback start
+   abrEwmaDefaultEstimate: 500000, // Default bandwidth estimate 500kbps
+   abrBandWidthFactor: 0.7,     // Bandwidth safety factor for ABR
+   abrBandWidthUpFactor: 0.1    // Conservative upgrade factor
+  });
+ }else{
+  // === Buffering-Free Mode OFF → Default HLS.js (যেমন আগে ছিল) ===
+  hls=new Hls();
+ }
+ hls.attachMedia(videoPlayer);
+ hls.loadSource(ch.url);
+ hls.on(Hls.Events.MANIFEST_PARSED,(e,data)=>{
+  if(window._streamLoadTimeout){clearTimeout(window._streamLoadTimeout);window._streamLoadTimeout=null;}
+  playerLoader.classList.add("hidden");playerLoader.classList.remove("loader-offline");
+  var sm=document.getElementById("speedMeter");if(sm)sm.style.display="none";
+  videoPlayer.play().catch(e=>console.log("Auto-play blocked",e));
+  setupQuality(data.levels);
+  // === DVR AUTO-SEEK: শুধুমাত্র Buffering-Free Mode ON হলে ===
+  // Seek to liveEdge - 10s so live streams start with a 10-second DVR buffer.
+  if(bfModeEnabled && hls.live){
+   var _dvrSeekDone=false;
+   var _dvrSeekAttempt=function(){
+    if(_dvrSeekDone) return;
+    var liveEdge=hls.liveSyncPosition;
+    if(liveEdge&&liveEdge>10){
+     _dvrSeekDone=true;
+     var seekTarget=liveEdge-10; // 10s behind live edge
+     console.log("[DVR-BF] Seeking to liveEdge-10s:",seekTarget.toFixed(1),"(liveEdge:",liveEdge.toFixed(1),")");
+     videoPlayer.currentTime=seekTarget;
+    } else if(videoPlayer.buffered&&videoPlayer.buffered.length>0){
+     var bufEnd=videoPlayer.buffered.end(videoPlayer.buffered.length-1);
+     if(bufEnd>10){
+      _dvrSeekDone=true;
+      var seekTarget=bufEnd-10;
+      console.log("[DVR-BF] Seeking to bufferedEnd-10s:",seekTarget.toFixed(1));
+      videoPlayer.currentTime=seekTarget;
+     }
+    }
+    if(!_dvrSeekDone){
+     setTimeout(_dvrSeekAttempt,500);
+    }
+   };
+   setTimeout(_dvrSeekAttempt,1000);
+  }
+ });
  hls.on(Hls.Events.FRAG_LOADED,(e,data)=>{measureRealSpeed();});
  hls.on(Hls.Events.ERROR,(e,data)=>{
  if(data.fatal){
- switch(data.type){
- case Hls.ErrorTypes.NETWORK_ERROR:
- // Try to recover from network errors
- try{hls.startLoad();}catch(re){hls.destroy();}
- break;
- case Hls.ErrorTypes.MEDIA_ERROR:
- // Try to recover from media errors
- try{hls.recoverMediaError();}catch(re){hls.destroy();}
- break;
- default:
- if(window._streamLoadTimeout){clearTimeout(window._streamLoadTimeout);window._streamLoadTimeout=null;}
- playerLoader.classList.remove("hidden");
- playerLoader.classList.add("loader-offline");
- playerStatusText.innerText="";
- hls.destroy();
- break;
- }
+  switch(data.type){
+  case Hls.ErrorTypes.NETWORK_ERROR:
+   // Try to recover from network errors
+   try{hls.startLoad();}catch(re){hls.destroy();}
+   break;
+  case Hls.ErrorTypes.MEDIA_ERROR:
+   // Try to recover from media errors
+   try{hls.recoverMediaError();}catch(re){hls.destroy();}
+   break;
+  default:
+   if(window._streamLoadTimeout){clearTimeout(window._streamLoadTimeout);window._streamLoadTimeout=null;}
+   playerLoader.classList.remove("hidden");
+   playerLoader.classList.add("loader-offline");
+   playerStatusText.innerText="";
+   hls.destroy();
+   break;
+  }
  }
  });
  // Feature 9: Re-show speed meter & loader on buffering
@@ -3300,80 +3372,127 @@ if(isMP4){
 // Mark current channel as playing
 const playingCard2 = document.querySelector('.card-animate[data-ch-index="' + currentChannelIndex + '"]');
 if (playingCard2) playingCard2.classList.add('is-playing');
-// Buffering-Free Mode: delay playback by 10s for video streams
+// === DVR BUFFERING-FREE MODE for video streams ===
+// শুধুমাত্র Buffering-Free Mode ON হলেই কাজ করবে।
+// OFF থাকলে কোনো DVR seek/drift fix হবে না।
+// MANIFEST_PARSED handler এ আগেই initial DVR seek হয়েছে (bfModeEnabled check সহ)।
+// এই সেকশন অতিরিক্ত periodic enforcement দেয় যখন bfModeEnabled ON।
 if (bfModeEnabled) {
- videoPlayer.addEventListener('loadedmetadata', function onMeta() {
-  videoPlayer.removeEventListener('loadedmetadata', onMeta);
-  if (bfModeEnabled && videoPlayer.buffered.length > 0) {
-   const seekTarget = Math.max(videoPlayer.currentTime, videoPlayer.buffered.end(0) - 10);
-   videoPlayer.currentTime = seekTarget;
-  }
- });
- // Also check periodically for HLS live streams
- setTimeout(() => {
-  if (bfModeEnabled && hls && videoPlayer.buffered.length > 0) {
-   const liveSync = videoPlayer.buffered.end(videoPlayer.buffered.length - 1) - 10;
-   if (liveSync > videoPlayer.currentTime) {
-    videoPlayer.currentTime = liveSync;
+ // Extra enforcement: periodically ensure we stay at liveEdge-10s for HLS live streams
+ var _bfDvrInterval = setInterval(function(){
+  if(!hls||!hls.live||videoPlayer.style.display==="none"){clearInterval(_bfDvrInterval);return;}
+  // যদি bfModeEnabled OFF হয়ে যায় রানটাইমে, interval বন্ধ করে দাও
+  if(!bfModeEnabled){clearInterval(_bfDvrInterval);return;}
+  try{
+   var liveEdge = hls.liveSyncPosition;
+   if(liveEdge && liveEdge > 10){
+    var lag = liveEdge - videoPlayer.currentTime;
+    // If drifted too close to live (< 5s) or too far behind (> 25s), re-seek
+    if(lag < 5 || lag > 25){
+     console.log("[BF-DVR] Correcting drift. Lag:", lag.toFixed(1), "s — seeking to liveEdge-10");
+     videoPlayer.currentTime = liveEdge - 10;
+    }
    }
-  }
- }, 5000);
+  }catch(e){}
+ }, 5000); // Check every 5 seconds
+ // Clean up interval when channel changes (hls gets destroyed)
+ var _bfCleanup = setInterval(function(){
+  if(!hls){clearInterval(_bfDvrInterval);clearInterval(_bfCleanup);}
+ }, 3000);
 }
 }
 // === AUTO RECOVER SYSTEM ===
-// Automatically recovers playback when video enters buffering (waiting state)
-// Monitors buffered content and resumes when enough buffer is available
+// Automatically recovers playback when video enters buffering (waiting state).
+// যখন Buffering-Free Mode ON: DVR-enhanced recovery — drift fixer pause, liveEdge-10s seek
+// যখন Buffering-Free Mode OFF: সাধারণ recovery — শুধু 5s buffer wait + play (আগের মতো)
 (function(){
- // Clean up previous auto-recover interval
+ // Clean up previous auto-recover interval and timers
  if(window._autoRecoverInterval){clearInterval(window._autoRecoverInterval);window._autoRecoverInterval=null;}
  if(window._autoRecoverLoop){clearTimeout(window._autoRecoverLoop);window._autoRecoverLoop=null;}
+
+ // === Recovery state variables ===
  var _isRecovering=false;
  var _recoverAttempts=0;
- var _maxRecoverAttempts=15; // Max 15 attempts per buffering session (≈30s)
- var REQUIRED_BUFFER_SEC=5; // Need at least 5s of buffer before resuming
+ var _maxRecoverAttempts=15;    // Max 15 attempts per buffering session (~30s)
+ var REQUIRED_BUFFER_SEC=5;     // Need at least 5s of buffer before resuming
+ var _driftPaused=false;        // True when drift fixer is paused during recovery (BF mode only)
 
+ // === Pause the drift fixer during buffering recovery (BF mode only) ===
+ function pauseDriftFixer(){
+  if(!bfModeEnabled) return; // শুধুমাত্র BF mode এ drift fixer pause করবে
+  if(!_driftPaused && window._driftFixerInterval){
+   clearInterval(window._driftFixerInterval);
+   window._driftFixerInterval=null;
+   _driftPaused=true;
+   console.log("[AutoRecover] Drift fixer paused during buffering (BF mode)");
+  }
+ }
+
+ // === Re-enable the drift fixer after recovery (BF mode only) ===
+ function resumeDriftFixer(){
+  if(!bfModeEnabled) return;
+  if(_driftPaused && window.fixDrift && window.CHECK_INTERVAL){
+   window._driftFixerInterval=setInterval(window.fixDrift,window.CHECK_INTERVAL);
+   _driftPaused=false;
+   console.log("[AutoRecover] Drift fixer resumed after recovery (BF mode)");
+  }
+ }
+
+ // === Main buffer check and recovery function ===
  function checkBufferAndRecover(){
   // Only act on HLS/DASH/MP4 video (not iframe)
   if(!videoPlayer||videoPlayer.style.display==="none") return;
-  // Only act when video is actually buffering/paused unexpectedly
+
+  // If video is playing fine, reset all recovery state
   if(!videoPlayer.paused&&videoPlayer.readyState>=3) {
-   // Video is playing fine, reset recovery state
    _isRecovering=false;
    _recoverAttempts=0;
+   if(_driftPaused) resumeDriftFixer();
    return;
   }
+
   // Prevent multiple recovery loops
   if(_isRecovering) return;
   _isRecovering=true;
 
   try{
-   // Check how much buffer is available
+   // Check how much buffer is available ahead
    if(videoPlayer.buffered&&videoPlayer.buffered.length>0){
     var bufferedEnd=videoPlayer.buffered.end(videoPlayer.buffered.length-1);
     var availableBuffer=bufferedEnd-videoPlayer.currentTime;
 
     if(availableBuffer>=REQUIRED_BUFFER_SEC){
-     // Enough buffer available - resume playback
+     // === Enough buffer available — resume playback ===
      videoPlayer.play().catch(function(e){
       console.log("[AutoRecover] Play failed:",e);
-      // If play failed, try seeking slightly forward first
       if(_recoverAttempts<_maxRecoverAttempts){
        _recoverAttempts++;
-       videoPlayer.currentTime=videoPlayer.currentTime+0.5;
+       // Buffering-Free Mode ON হলে: DVR position এ seek করে recover করবে
+       if(bfModeEnabled && hls&&hls.live){
+        var liveEdge=hls.liveSyncPosition;
+        if(liveEdge&&liveEdge>10){
+         console.log("[AutoRecover-BF] Seeking to DVR position liveEdge-10s");
+         videoPlayer.currentTime=liveEdge-10;
+        }
+       } else {
+        // BF OFF: সাধারণ +0.5s seek (আগের মতো)
+        videoPlayer.currentTime=videoPlayer.currentTime+0.5;
+       }
        setTimeout(function(){videoPlayer.play().catch(function(){});},200);
       }
      });
      _isRecovering=false;
      _recoverAttempts=0;
+     if(_driftPaused) resumeDriftFixer();
     } else {
      // Not enough buffer yet, keep waiting
      _recoverAttempts++;
      if(_recoverAttempts<_maxRecoverAttempts){
-      _isRecovering=false; // Allow next check
+      _isRecovering=false;
      } else {
-      // Too many attempts, stop recovering (offline or severe network issue)
       _isRecovering=false;
       _recoverAttempts=0;
+      if(_driftPaused) resumeDriftFixer();
      }
     }
    } else {
@@ -3382,6 +3501,7 @@ if (bfModeEnabled) {
     if(_recoverAttempts>=_maxRecoverAttempts){
      _isRecovering=false;
      _recoverAttempts=0;
+     if(_driftPaused) resumeDriftFixer();
     } else {
      _isRecovering=false;
     }
@@ -3394,12 +3514,13 @@ if (bfModeEnabled) {
  // Run buffer check every 2 seconds
  window._autoRecoverInterval=setInterval(checkBufferAndRecover,2000);
 
- // Also hook into waiting event for immediate response
+ // Hook into waiting event for immediate response
  videoPlayer.addEventListener("waiting",function(){
   if(videoPlayer.style.display==="none") return;
-  _isRecovering=false; // Allow recovery to start
+  _isRecovering=false;
   _recoverAttempts=0;
-  // Quick check after 1.5s
+  // শুধুমাত্র BF mode এ drift fixer pause করবে
+  if(bfModeEnabled) pauseDriftFixer();
   clearTimeout(window._autoRecoverLoop);
   window._autoRecoverLoop=setTimeout(checkBufferAndRecover,1500);
  },{passive:true});
@@ -3408,30 +3529,41 @@ if (bfModeEnabled) {
  videoPlayer.addEventListener("playing",function(){
   _isRecovering=false;
   _recoverAttempts=0;
+  if(bfModeEnabled && _driftPaused) resumeDriftFixer();
  },{passive:true});
 })();
 
-// === DRIFT FIXER SYSTEM ===
-// Keeps live playback at a stable DVR position (~10s behind live edge)
-// Prevents drifting too close to live (causing buffering) or too far behind
+// === DRIFT FIXER SYSTEM (Buffering-Free Mode Only) ===
+// Keeps live playback at a stable DVR position (~10s behind live edge).
+// শুধুমাত্র Buffering-Free Mode ON হলেই কাজ করবে।
+// OFF থাকলে এই interval চালু হবেই না — কোনো drift correction হবে না।
 (function(){
  // Clean up previous drift fixer interval
  if(window._driftFixerInterval){clearInterval(window._driftFixerInterval);window._driftFixerInterval=null;}
 
- var TARGET_LAG=10;       // Stay 10s behind live
- var MIN_LAG=5;           // If lag < 5s, seek back
- var MAX_LAG=25;          // If lag > 25s, seek forward
- var CHECK_INTERVAL=5000; // Check every 5 seconds
- var _lastSeekTime=0;     // Prevent seeking too frequently
- var MIN_SEEK_GAP=3000;   // At least 3s between seeks
+ // === DVR Configuration ===
+ var TARGET_LAG=10;       // Stay 10s behind live (DVR buffer target)
+ var MIN_LAG=5;           // If lag < 5s, too close to live — seek back to safe zone
+ var MAX_LAG=25;          // If lag > 25s, too far behind — seek forward to safe zone
+ var CHECK_INTERVAL=5000; // Monitor playback drift every 5 seconds
+ var _lastSeekTime=0;     // Timestamp of last seek (prevents seeking too frequently)
+ var MIN_SEEK_GAP=3000;   // At least 3s between seeks (prevents seek thrashing)
 
+ // === Determine the live edge position using multiple methods ===
+ // Method 1 (best): HLS.js liveSyncPosition — most accurate for HLS live streams
+ // Method 2 (fallback): buffered.end — useful when HLS.js sync isn't available
+ // Method 3 (fallback): DASH player duration — for DASH live streams
  function getLiveEdge(){
   try{
    // Method 1: Use HLS.js liveSyncPosition (most accurate for HLS)
+   // This is the HLS.js calculated live sync point, which accounts for
+   // segment duration and playlist reload timing.
    if(hls&&hls.liveSyncPosition!==undefined&&hls.liveSyncPosition>0){
     return hls.liveSyncPosition;
    }
    // Method 2: Use buffered end for live streams
+   // When buffer end is significantly ahead of current position, the stream
+   // is likely live and we can use buffer end as an approximation of live edge.
    if(videoPlayer.buffered&&videoPlayer.buffered.length>0){
     var bufEnd=videoPlayer.buffered.end(videoPlayer.buffered.length-1);
     // Only use if it's significantly ahead of currentTime (indicates live)
@@ -3452,39 +3584,57 @@ if (bfModeEnabled) {
   return null; // Not a live stream or can't determine
  }
 
+ // === Main drift correction function ===
+ // শুধুমাত্র Buffering-Free Mode ON হলেই drift correction করবে।
+ // OFF থাকলে এই function call হলেও কিছু করবে না।
  function fixDrift(){
+  // যদি BF mode OFF থাকে, কোনো drift correction করবে না
+  if(!bfModeEnabled) return;
   // Only act on video player (not iframe)
   if(!videoPlayer||videoPlayer.style.display==="none") return;
-  // Don't interfere if video is paused by user
+  // Don't interfere if video is paused by user (respect user pause)
   if(videoPlayer.paused) return;
-  // Don't seek too frequently
+  // Don't seek too frequently (prevents seek thrashing and UI glitches)
   var now=Date.now();
   if(now-_lastSeekTime<MIN_SEEK_GAP) return;
 
   var liveEdge=getLiveEdge();
-  if(liveEdge===null) return; // Not a live stream
+  if(liveEdge===null) return; // Not a live stream — don't interfere with VOD
 
   var lag=liveEdge-videoPlayer.currentTime;
 
   if(lag<MIN_LAG){
-   // Too close to live edge - seek back to safe zone
+   // === Too close to live edge (< 5s lag) ===
+   // Seek back to the safe DVR position (liveEdge - 10s).
    var seekTarget=liveEdge-TARGET_LAG;
    if(seekTarget>0){
+    console.log("[DriftFixer-BF] Too close to live ("+lag.toFixed(1)+"s), seeking back to liveEdge-"+TARGET_LAG+"s ("+seekTarget.toFixed(1)+"s)");
     videoPlayer.currentTime=seekTarget;
     _lastSeekTime=now;
    }
   } else if(lag>MAX_LAG){
-   // Too far behind live - catch up to safe zone
+   // === Too far behind live (> 25s lag) ===
+   // Seek forward to the safe DVR position (liveEdge - 10s).
    var seekTarget=liveEdge-TARGET_LAG;
    if(seekTarget>0){
+    console.log("[DriftFixer-BF] Too far behind live ("+lag.toFixed(1)+"s), seeking forward to liveEdge-"+TARGET_LAG+"s ("+seekTarget.toFixed(1)+"s)");
     videoPlayer.currentTime=seekTarget;
     _lastSeekTime=now;
    }
   }
-  // If lag is between MIN_LAG and MAX_LAG, do nothing (stable zone)
+  // If lag is between MIN_LAG (5s) and MAX_LAG (25s), do nothing — stable zone
  }
 
- window._driftFixerInterval=setInterval(fixDrift,CHECK_INTERVAL);
+ // === Expose fixDrift and CHECK_INTERVAL globally ===
+ // This allows the Auto Recover System to pause/resume the drift fixer.
+ window.fixDrift=fixDrift;
+ window.CHECK_INTERVAL=CHECK_INTERVAL;
+
+ // === শুধুমাত্র Buffering-Free Mode ON হলেই interval চালু করবে ===
+ // OFF থাকলে interval চালু হবে না — কোনো drift fix হবে না।
+ if(bfModeEnabled){
+  window._driftFixerInterval=setInterval(fixDrift,CHECK_INTERVAL);
+ }
 })();
 // Center Next/Previous channel controls
 function prevChannelAction(e) {
@@ -4066,17 +4216,42 @@ function toggleBFMode() {
   if (cb) cb.checked = bfModeEnabled;
   const indicator = document.getElementById('bfIndicator');
   if (indicator) {
-    // Show as toast - briefly visible then auto-hide
-    indicator.classList.toggle('active', bfModeEnabled);
-    // Auto-hide the indicator after 2 seconds (toast behavior)
-    indicator.classList.remove('bf-toast');
-    clearTimeout(indicator._bfTimer);
-    indicator._bfTimer = setTimeout(function(){
-      indicator.classList.add('bf-toast');
-    }, 2000);
+   // Show as toast - briefly visible then auto-hide
+   indicator.classList.toggle('active', bfModeEnabled);
+   // Auto-hide the indicator after 2 seconds (toast behavior)
+   indicator.classList.remove('bf-toast');
+   clearTimeout(indicator._bfTimer);
+   indicator._bfTimer = setTimeout(function(){
+     indicator.classList.add('bf-toast');
+   }, 2000);
   }
   localStorage.setItem('aitv_bf_mode', bfModeEnabled ? 'on' : 'off');
   showToast(bfModeEnabled ? 'Buffering-Free Mode ON' : 'Buffering-Free Mode OFF');
+
+  // === DVR System: রানটাইমে BF mode toggle করলে DVR ও ON/OFF হবে ===
+  if(bfModeEnabled){
+   // BF ON হলে: Drift Fixer interval চালু করো
+   if(window.fixDrift && window.CHECK_INTERVAL && !window._driftFixerInterval){
+    window._driftFixerInterval=setInterval(window.fixDrift,window.CHECK_INTERVAL);
+    console.log("[BF-Mode] Drift Fixer started");
+   }
+   // যদি এখন HLS live stream চলছে, DVR position এ seek করো
+   if(hls && hls.live && hls.liveSyncPosition && hls.liveSyncPosition>10){
+    var liveEdge=hls.liveSyncPosition;
+    var lag=liveEdge-videoPlayer.currentTime;
+    if(lag<5||lag>25){
+     console.log("[BF-Mode] Seeking to DVR position liveEdge-10s");
+     videoPlayer.currentTime=liveEdge-10;
+    }
+   }
+  }else{
+   // BF OFF হলে: Drift Fixer interval বন্ধ করো
+   if(window._driftFixerInterval){
+    clearInterval(window._driftFixerInterval);
+    window._driftFixerInterval=null;
+    console.log("[BF-Mode] Drift Fixer stopped");
+   }
+  }
 }
 
 function togglePlayPause() {
