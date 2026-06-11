@@ -1922,7 +1922,7 @@ async function initSupabaseContent() {
   var topAdSlot = document.getElementById("topBannerAd");
   if (topAdSlot) {
    topAdSlot.innerHTML = "";
-   topAdSlot.classList.remove("hidden");
+   // renderBannerAd will remove hidden + add mb-4 only if ad has actual content
    renderBannerAd(bannerAds[0], topAdSlot);
   }
  
@@ -1932,10 +1932,11 @@ async function initSupabaseContent() {
    if (!sidebarAdSlot) {
     sidebarAdSlot = document.createElement("div");
     sidebarAdSlot.id = "sidebarAdBanner";
-    sidebarAdSlot.className = "sidebar-section mb-4"; 
+    sidebarAdSlot.className = "sidebar-section";
     sidebarBody.insertBefore(sidebarAdSlot, sidebarBody.firstChild);
    }
-   sidebarAdSlot.innerHTML = ""; 
+   sidebarAdSlot.innerHTML = "";
+   // renderBannerAd will add mb-4 only if ad has actual content
    renderBannerAd(bannerAds[0], sidebarAdSlot);
   }
  }
@@ -2067,32 +2068,28 @@ async function loadAdScripts() {
   var mainPageScripts = menuScripts.concat(bothScripts);
   if (mainPageScripts.length > 0 && topSlot) {
    topSlot.style.display = "block";
-   topSlot.style.marginBottom = "12px";
    mainPageScripts.forEach(function(script, idx) {
     var wrapper = document.createElement("div");
     wrapper.id = "adScript_menu_" + script.id;
     wrapper.className = "ad-script-container";
-    wrapper.style.cssText = "width:100%;min-height:50px;margin-bottom:8px;text-align:center;overflow:visible;";
+    wrapper.style.cssText = "width:100%;margin-bottom:8px;text-align:center;overflow:visible;";
     topSlot.appendChild(wrapper);
     injectAdScript(wrapper, script.script_code || '');
     console.log("[AdScripts] Injected main page script:", script.name, "position:", script.position);
    });
-   topSlot.style.minHeight = "auto";
   }
 
   // Also inject "both" scripts into the bottom slot for extra coverage
   if (bothScripts.length > 0 && bottomSlot) {
    bottomSlot.style.display = "block";
-   bottomSlot.style.marginTop = "12px";
    bothScripts.forEach(function(script) {
     var wrapper = document.createElement("div");
     wrapper.id = "adScript_bottom_" + script.id;
     wrapper.className = "ad-script-container";
-    wrapper.style.cssText = "width:100%;min-height:50px;margin-bottom:8px;text-align:center;overflow:visible;";
+    wrapper.style.cssText = "width:100%;margin-bottom:8px;text-align:center;overflow:visible;";
     bottomSlot.appendChild(wrapper);
     injectAdScript(wrapper, script.script_code || '');
    });
-   bottomSlot.style.minHeight = "auto";
   }
 
   // --- STEP 4: INJECT INTO SIDEBAR ---
@@ -2102,7 +2099,7 @@ async function loadAdScripts() {
     var scriptContainer = document.createElement("div");
     scriptContainer.id = "adScript_sidebar_" + script.id;
     scriptContainer.className = "sidebar-section mb-3 ad-script-container";
-    scriptContainer.style.cssText = "min-height:50px;overflow:visible;";
+    scriptContainer.style.cssText = "overflow:visible;";
     sidebarBody.appendChild(scriptContainer);
     injectAdScript(scriptContainer, script.script_code || '');
    });
@@ -2117,7 +2114,7 @@ async function loadAdScripts() {
      var scriptContainer = document.createElement("div");
      scriptContainer.id = "adScript_wc_" + script.id;
      scriptContainer.className = "ad-script-container";
-     scriptContainer.style.cssText = "width:100%;min-height:50px;margin-bottom:8px;text-align:center;overflow:visible;";
+     scriptContainer.style.cssText = "width:100%;margin-bottom:8px;text-align:center;overflow:visible;";
      wcBody.appendChild(scriptContainer);
      injectAdScript(scriptContainer, script.script_code || '');
     });
@@ -2144,7 +2141,7 @@ async function loadAdScripts() {
      var pageContainer = document.createElement("div");
      pageContainer.id = "adScript_global_" + script.id;
      pageContainer.className = "ad-script-container";
-     pageContainer.style.cssText = "width:100%;min-height:50px;text-align:center;overflow:visible;";
+     pageContainer.style.cssText = "width:100%;text-align:center;overflow:visible;";
      document.body.appendChild(pageContainer);
      injectAdScript(pageContainer, code);
      console.log("[AdScripts] Injected body-level mixed script:", script.name);
@@ -3381,30 +3378,8 @@ if (playingCard2) playingCard2.classList.add('is-playing');
 // শুধুমাত্র Buffering-Free Mode ON হলেই কাজ করবে।
 // OFF থাকলে কোনো DVR seek/drift fix হবে না।
 // MANIFEST_PARSED handler এ আগেই initial DVR seek হয়েছে (bfModeEnabled check সহ)।
-// এই সেকশন অতিরিক্ত periodic enforcement দেয় যখন bfModeEnabled ON।
-if (bfModeEnabled) {
- // Extra enforcement: periodically ensure we stay at liveEdge-10s for HLS live streams
- var _bfDvrInterval = setInterval(function(){
-  if(!hls||!hls.live||videoPlayer.style.display==="none"){clearInterval(_bfDvrInterval);return;}
-  // যদি bfModeEnabled OFF হয়ে যায় রানটাইমে, interval বন্ধ করে দাও
-  if(!bfModeEnabled){clearInterval(_bfDvrInterval);return;}
-  try{
-   var liveEdge = hls.liveSyncPosition;
-   if(liveEdge && liveEdge > 10){
-    var lag = liveEdge - videoPlayer.currentTime;
-    // If drifted too close to live (< 5s) or too far behind (> 25s), re-seek
-    if(lag < 5 || lag > 25){
-     console.log("[BF-DVR] Correcting drift. Lag:", lag.toFixed(1), "s — seeking to liveEdge-10");
-     videoPlayer.currentTime = liveEdge - 10;
-    }
-   }
-  }catch(e){}
- }, 5000); // Check every 5 seconds
- // Clean up interval when channel changes (hls gets destroyed)
- var _bfCleanup = setInterval(function(){
-  if(!hls){clearInterval(_bfDvrInterval);clearInterval(_bfCleanup);}
- }, 3000);
-}
+// Periodic drift correction is handled by the Drift Fixer System below (fixDrift function)
+// which has proper seek gap protection, user pause respect, and auto-recover integration.
 }
 // === AUTO RECOVER SYSTEM ===
 // Automatically recovers playback when video enters buffering (waiting state).
