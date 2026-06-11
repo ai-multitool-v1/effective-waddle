@@ -3003,6 +3003,13 @@ function playChannel(ch){
  centerPlayBtn.style.opacity="0";
  // Reset centerPlayBtn display for non-iframe streams (was hidden for iframe)
  centerPlayBtn.style.display="";
+ // === RESTORE ALL CUSTOM PLAYER OVERLAYS when switching back from iframe ===
+ var _controlsOverlay = document.getElementById("controlsOverlay");
+ if(_controlsOverlay) _controlsOverlay.style.display = "";
+ var _centerNav = document.getElementById("centerNavControls");
+ if(_centerNav) _centerNav.style.display = "";
+ var _bfInd = document.getElementById("bfIndicator");
+ if(_bfInd) _bfInd.style.display = "";
  // Clear any previous iframe load timeout
  if(window._iframeLoadTimeout){clearTimeout(window._iframeLoadTimeout);window._iframeLoadTimeout=null;}
  // Feature 7: Save last channel
@@ -3033,8 +3040,18 @@ function playChannel(ch){
  // Clear stream load timeout
  if(window._streamLoadTimeout){clearTimeout(window._streamLoadTimeout);window._streamLoadTimeout=null;}
  iframePlayer.style.display = "block";
- // Hide centerPlayBtn completely for iframe streams to allow YouTube controls to work
+ // === HIDE ALL CUSTOM PLAYER OVERLAYS for iframe/YouTube streams ===
+ // This prevents YouTube Error 153 (player configuration error)
+ // YouTube detects overlays on top of its iframe and blocks playback
  centerPlayBtn.style.display = "none";
+ var _controlsOverlay = document.getElementById("controlsOverlay");
+ if(_controlsOverlay) _controlsOverlay.style.display = "none";
+ var _centerNav = document.getElementById("centerNavControls");
+ if(_centerNav) _centerNav.style.display = "none";
+ var _bfInd = document.getElementById("bfIndicator");
+ if(_bfInd) _bfInd.style.display = "none";
+ var _sm = document.getElementById("speedMeter");
+ if(_sm) _sm.style.display = "none";
  // YouTube URL conversion for iframe streams
  let embedUrl = ch.url;
  const ytMatch = ch.url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
@@ -3334,6 +3351,9 @@ const controlsOverlay = document.getElementById("controlsOverlay");
 let idleTimer;
 function toggleControls(show) {
  var centerNav = document.getElementById("centerNavControls");
+ // Don't show controls overlay for iframe/YouTube streams - they have their own controls
+ var isIframeMode = iframePlayer && iframePlayer.style.display !== 'none';
+ if (isIframeMode) return;
  // Don't show center nav during loading
  var isLoading = !playerLoader.classList.contains("hidden");
  if (show) {
@@ -3442,7 +3462,8 @@ function handleDoubleTapFullscreen(){
 }
 videoPlayer.addEventListener("click",handleDoubleTapFullscreen);
 playerWrapper.addEventListener("click",function(e){
- if(iframePlayer&&iframePlayer.style.display!=='none'){handleDoubleTapFullscreen();}
+ // Don't handle clicks on iframe/YouTube - let YouTube handle its own clicks
+ if(iframePlayer&&iframePlayer.style.display!=='none') return;
 });
 const qualityBtn=document.getElementById("qualityBtn");
 const qualityMenu=document.getElementById("qualityMenu");
