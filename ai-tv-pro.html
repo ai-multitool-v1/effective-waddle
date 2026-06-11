@@ -3010,6 +3010,8 @@ function playChannel(ch){
  if(_centerNav) _centerNav.style.display = "";
  var _bfInd = document.getElementById("bfIndicator");
  if(_bfInd) _bfInd.style.display = "";
+ var _playerLoader = document.getElementById("playerLoader");
+ if(_playerLoader) _playerLoader.style.zIndex = "";
  // Clear any previous iframe load timeout
  if(window._iframeLoadTimeout){clearTimeout(window._iframeLoadTimeout);window._iframeLoadTimeout=null;}
  // Feature 7: Save last channel
@@ -3042,7 +3044,6 @@ function playChannel(ch){
  iframePlayer.style.display = "block";
  // === HIDE ALL CUSTOM PLAYER OVERLAYS for iframe/YouTube streams ===
  // This prevents YouTube Error 153 (player configuration error)
- // YouTube detects overlays on top of its iframe and blocks playback
  centerPlayBtn.style.display = "none";
  var _controlsOverlay = document.getElementById("controlsOverlay");
  if(_controlsOverlay) _controlsOverlay.style.display = "none";
@@ -3052,14 +3053,14 @@ function playChannel(ch){
  if(_bfInd) _bfInd.style.display = "none";
  var _sm = document.getElementById("speedMeter");
  if(_sm) _sm.style.display = "none";
+ // Hide playerLoader overlay too - nothing should be above YouTube iframe
+ var _playerLoader = document.getElementById("playerLoader");
+ if(_playerLoader) _playerLoader.style.zIndex = "-1";
  // YouTube URL conversion for iframe streams
  let embedUrl = ch.url;
  const ytMatch = ch.url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
  if (ytMatch) {
- embedUrl = 'https://www.youtube-nocookie.com/embed/' + ytMatch[1] + '?autoplay=1&mute=0&rel=0&modestbranding=1&enablejsapi=1&origin=' + encodeURIComponent(window.location.origin);
- if (ch.url.includes('/live/') || ch.url.toLowerCase().includes('live')) {
- embedUrl += '&live=1';
- }
+ embedUrl = 'https://www.youtube.com/embed/' + ytMatch[1] + '?autoplay=1&mute=1&rel=0';
  }
  // HTTP status check for iframe URL (non-YouTube only, YouTube embeds always use timeout)
  var isYoutube = ytMatch && ytMatch[1];
@@ -3069,6 +3070,9 @@ function playChannel(ch){
    // no-cors fetch will opaque-redirect, but onerror means network failure
   });
  }
+ // Reset iframe src before setting new one
+ iframePlayer.src = "";
+ iframePlayer.removeAttribute("sandbox");
  iframePlayer.src = embedUrl;
  iframePlayer.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
  iframePlayer.allowFullscreen = true;
@@ -3090,12 +3094,16 @@ function playChannel(ch){
  playerLoader.classList.remove('loader-offline');
  var sm = document.getElementById('speedMeter');
  if (sm) sm.style.display = 'none';
+ var _playerLoader = document.getElementById("playerLoader");
+ if(_playerLoader) _playerLoader.style.zIndex = "";
  };
  iframePlayer.onerror = function() {
  clearTimeout(window._iframeLoadTimeout);
  playerLoader.classList.remove('hidden');
  playerLoader.classList.add('loader-offline');
  playerStatusText.innerText = 'Stream Offline';
+ var _playerLoader = document.getElementById("playerLoader");
+ if(_playerLoader) _playerLoader.style.zIndex = "";
  };
  // Buffering-Free Mode: delay playback by 10s for iframe
  if (bfModeEnabled) {
