@@ -3000,6 +3000,10 @@ function playChannel(ch){
  if (centerNav) centerNav.classList.remove("visible");
  playerStatusText.innerText="Connecting...";
  document.getElementById("playingTitle").innerText=ch.name;
+ // Clean up Auto Recover and Drift Fixer intervals from previous channel
+ if(window._autoRecoverInterval){clearInterval(window._autoRecoverInterval);window._autoRecoverInterval=null;}
+ if(window._autoRecoverLoop){clearTimeout(window._autoRecoverLoop);window._autoRecoverLoop=null;}
+ if(window._driftFixerInterval){clearInterval(window._driftFixerInterval);window._driftFixerInterval=null;}
  centerPlayBtn.style.opacity="0";
  // Reset centerPlayBtn display for non-iframe streams (was hidden for iframe)
  centerPlayBtn.style.display="";
@@ -3316,6 +3320,172 @@ if (bfModeEnabled) {
  }, 5000);
 }
 }
+// === AUTO RECOVER SYSTEM ===
+// Automatically recovers playback when video enters buffering (waiting state)
+// Monitors buffered content and resumes when enough buffer is available
+(function(){
+ // Clean up previous auto-recover interval
+ if(window._autoRecoverInterval){clearInterval(window._autoRecoverInterval);window._autoRecoverInterval=null;}
+ if(window._autoRecoverLoop){clearTimeout(window._autoRecoverLoop);window._autoRecoverLoop=null;}
+ var _isRecovering=false;
+ var _recoverAttempts=0;
+ var _maxRecoverAttempts=15; // Max 15 attempts per buffering session (≈30s)
+ var REQUIRED_BUFFER_SEC=5; // Need at least 5s of buffer before resuming
+
+ function checkBufferAndRecover(){
+  // Only act on HLS/DASH/MP4 video (not iframe)
+  if(!videoPlayer||videoPlayer.style.display==="none") return;
+  // Only act when video is actually buffering/paused unexpectedly
+  if(!videoPlayer.paused&&videoPlayer.readyState>=3) {
+   // Video is playing fine, reset recovery state
+   _isRecovering=false;
+   _recoverAttempts=0;
+   return;
+  }
+  // Prevent multiple recovery loops
+  if(_isRecovering) return;
+  _isRecovering=true;
+
+  try{
+   // Check how much buffer is available
+   if(videoPlayer.buffered&&videoPlayer.buffered.length>0){
+    var bufferedEnd=videoPlayer.buffered.end(videoPlayer.buffered.length-1);
+    var availableBuffer=bufferedEnd-videoPlayer.currentTime;
+
+    if(availableBuffer>=REQUIRED_BUFFER_SEC){
+     // Enough buffer available - resume playback
+     videoPlayer.play().catch(function(e){
+      console.log("[AutoRecover] Play failed:",e);
+      // If play failed, try seeking slightly forward first
+      if(_recoverAttempts<_maxRecoverAttempts){
+       _recoverAttempts++;
+       videoPlayer.currentTime=videoPlayer.currentTime+0.5;
+       setTimeout(function(){videoPlayer.play().catch(function(){});},200);
+      }
+     });
+     _isRecovering=false;
+     _recoverAttempts=0;
+    } else {
+     // Not enough buffer yet, keep waiting
+     _recoverAttempts++;
+     if(_recoverAttempts<_maxRecoverAttempts){
+      _isRecovering=false; // Allow next check
+     } else {
+      // Too many attempts, stop recovering (offline or severe network issue)
+      _isRecovering=false;
+      _recoverAttempts=0;
+     }
+    }
+   } else {
+    // No buffer data at all
+    _recoverAttempts++;
+    if(_recoverAttempts>=_maxRecoverAttempts){
+     _isRecovering=false;
+     _recoverAttempts=0;
+    } else {
+     _isRecovering=false;
+    }
+   }
+  } catch(e){
+   _isRecovering=false;
+  }
+ }
+
+ // Run buffer check every 2 seconds
+ window._autoRecoverInterval=setInterval(checkBufferAndRecover,2000);
+
+ // Also hook into waiting event for immediate response
+ videoPlayer.addEventListener("waiting",function(){
+  if(videoPlayer.style.display==="none") return;
+  _isRecovering=false; // Allow recovery to start
+  _recoverAttempts=0;
+  // Quick check after 1.5s
+  clearTimeout(window._autoRecoverLoop);
+  window._autoRecoverLoop=setTimeout(checkBufferAndRecover,1500);
+ },{passive:true});
+
+ // Reset on playing
+ videoPlayer.addEventListener("playing",function(){
+  _isRecovering=false;
+  _recoverAttempts=0;
+ },{passive:true});
+})();
+
+// === DRIFT FIXER SYSTEM ===
+// Keeps live playback at a stable DVR position (~10s behind live edge)
+// Prevents drifting too close to live (causing buffering) or too far behind
+(function(){
+ // Clean up previous drift fixer interval
+ if(window._driftFixerInterval){clearInterval(window._driftFixerInterval);window._driftFixerInterval=null;}
+
+ var TARGET_LAG=10;       // Stay 10s behind live
+ var MIN_LAG=5;           // If lag < 5s, seek back
+ var MAX_LAG=25;          // If lag > 25s, seek forward
+ var CHECK_INTERVAL=5000; // Check every 5 seconds
+ var _lastSeekTime=0;     // Prevent seeking too frequently
+ var MIN_SEEK_GAP=3000;   // At least 3s between seeks
+
+ function getLiveEdge(){
+  try{
+   // Method 1: Use HLS.js liveSyncPosition (most accurate for HLS)
+   if(hls&&hls.liveSyncPosition!==undefined&&hls.liveSyncPosition>0){
+    return hls.liveSyncPosition;
+   }
+   // Method 2: Use buffered end for live streams
+   if(videoPlayer.buffered&&videoPlayer.buffered.length>0){
+    var bufEnd=videoPlayer.buffered.end(videoPlayer.buffered.length-1);
+    // Only use if it's significantly ahead of currentTime (indicates live)
+    if(bufEnd-videoPlayer.currentTime>2){
+     return bufEnd;
+    }
+   }
+   // Method 3: DASH player live edge
+   if(window._dashPlayer){
+    try{
+     var dashDuration=window._dashPlayer.duration();
+     if(dashDuration!==Infinity&&dashDuration>0){
+      return dashDuration;
+     }
+    }catch(e){}
+   }
+  }catch(e){}
+  return null; // Not a live stream or can't determine
+ }
+
+ function fixDrift(){
+  // Only act on video player (not iframe)
+  if(!videoPlayer||videoPlayer.style.display==="none") return;
+  // Don't interfere if video is paused by user
+  if(videoPlayer.paused) return;
+  // Don't seek too frequently
+  var now=Date.now();
+  if(now-_lastSeekTime<MIN_SEEK_GAP) return;
+
+  var liveEdge=getLiveEdge();
+  if(liveEdge===null) return; // Not a live stream
+
+  var lag=liveEdge-videoPlayer.currentTime;
+
+  if(lag<MIN_LAG){
+   // Too close to live edge - seek back to safe zone
+   var seekTarget=liveEdge-TARGET_LAG;
+   if(seekTarget>0){
+    videoPlayer.currentTime=seekTarget;
+    _lastSeekTime=now;
+   }
+  } else if(lag>MAX_LAG){
+   // Too far behind live - catch up to safe zone
+   var seekTarget=liveEdge-TARGET_LAG;
+   if(seekTarget>0){
+    videoPlayer.currentTime=seekTarget;
+    _lastSeekTime=now;
+   }
+  }
+  // If lag is between MIN_LAG and MAX_LAG, do nothing (stable zone)
+ }
+
+ window._driftFixerInterval=setInterval(fixDrift,CHECK_INTERVAL);
+})();
 // Center Next/Previous channel controls
 function prevChannelAction(e) {
  if(e) e.stopPropagation();
