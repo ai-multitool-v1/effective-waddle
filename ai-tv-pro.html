@@ -1186,7 +1186,7 @@ body.tv-mode .tv-mode-float-settings { display: none !important; }
     <p class="mb-3">All channels and streams are parsed from third-party M3U playlists publicly available on the internet. We have no direct control over the content, copyright, or legality of the streams provided by these third parties.</p>
     <p>If you believe your copyrighted material is being streamed illegally, please contact the respective third-party hosting provider directly. AI TV Pro bears no responsibility for the media parsed by users.</p>
   </div>
-</div><button class="tv-mode-float-settings" id="tvModeFloatSettings" title="Open Settings"><i class="fas fa-cog"></i></button><div class="ch-jump-overlay" id="chJumpOverlay"><span id="chJumpNum"></span></div><main class="flex-1 flex flex-col relative min-h-0 bg-[#050505]" id="mainContent"><div id="playerPanel"><div class="player-hidden w-full bg-black relative group flex-shrink-0 border-b border-white/10 z-30" id="playerWrapper"><div class="drag-handle" id="dragHandle"></div><div class="w-full h-full relative flex items-center justify-center bg-black overflow-hidden" id="videoContainer"><video class="w-full h-full object-contain bg-black" id="videoPlayer" playsinline="" webkit-playsinline=""></video><iframe id="iframePlayer" class="w-full h-full absolute inset-0" style="display:none;border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe><div class="center-play-btn" id="centerPlayBtn"><i class="fas fa-play"></i></div><div class="bf-indicator" id="bfIndicator">BF: ON</div><div class="center-nav-controls" id="centerNavControls"><button class="center-nav-btn" id="centerPrevBtn" onclick="prevChannelAction(event)"><i class="fas fa-backward"></i></button><button class="center-nav-btn" id="centerNextBtn" onclick="nextChannelAction(event)"><i class="fas fa-forward"></i></button></div><div class="resize-handle" id="resizeHandle"></div><div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-0 invisible transition-all duration-300 flex flex-col justify-end p-3 z-20 pointer-events-none" id="controlsOverlay"><div class="pointer-events-auto w-full relative h-full flex flex-col justify-end"><button class="hidden absolute top-0 right-0 m-2 bg-red-600 hover:bg-red-700 text-white w-8 h-8 rounded-full items-center justify-center text-sm shadow-xl z-[60] cursor-pointer pointer-events-auto transform transition hover:scale-110 active:scale-95 border border-white/20" id="closeFloatBtn"><i class="fas fa-times"></i></button><div class="flex justify-between items-center bg-black/60 backdrop-blur-md p-2 rounded-xl border border-white/10 shadow-lg mt-auto"><div class="flex items-center gap-3 overflow-hidden"><button class="text-white hover:text-cyan-400 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition" id="playBtn"><i class="fas fa-play"></i></button><div class="flex flex-col"><span class="text-xs font-bold text-white truncate max-w-[120px] md:max-w-[200px]" id="playingTitle">Loading...</span><span class="text-[9px] text-gray-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> LIVE</span></div></div><div class="flex items-center gap-2 text-gray-300"><div class="flex items-center gap-2 px-2"><i class="fas fa-volume-up text-xs text-gray-300" id="volumeIcon"></i><input class="w-20 accent-cyan-400 cursor-pointer" id="volumeSlider" max="100" min="0" type="range" value="100"/></div><div class="relative"><button class="w-8 h-8 hover:bg-white/10 rounded-full transition flex items-center justify-center" id="qualityBtn" title="Quality"><i class="fas fa-cog"></i></button><div class="settings-menu smooth-dropdown" id="qualityMenu"><div class="p-3 border-b border-white/10 text-xs font-bold text-gray-400">Quality</div><div id="qualityList"></div></div></div><button class="w-8 h-8 hover:bg-white/10 rounded-full transition flex items-center justify-center" id="pipBtn" title="Picture in Picture"><i class="fas fa-compress-alt"></i></button><button class="w-8 h-8 hover:bg-white/10 rounded-full transition flex items-center justify-center hidden" id="floatBtn" title="Floating Mode"><i class="fas fa-external-link-alt"></i></button><button class="w-8 h-8 hover:bg-white/10 rounded-full transition flex items-center justify-center" id="fsBtn" title="Fullscreen"><i class="fas fa-expand"></i></button></div></div></div></div><div class="absolute inset-0 flex flex-col items-center justify-center bg-black z-10 player-svg-loader" id="playerLoader"><svg height="70%" viewbox="0 0 500 500" width="70%" xmlns="http://www.w3.org/2000/svg"><defs><style>
+</div><button class="tv-mode-float-settings" id="tvModeFloatSettings" title="Open Settings"><i class="fas fa-cog"></i></button><div class="ch-jump-overlay" id="chJumpOverlay"><span id="chJumpNum"></span></div><main class="flex-1 flex flex-col relative min-h-0 bg-[#050505]" id="mainContent"><div id="playerPanel"><div class="player-hidden w-full bg-black relative group flex-shrink-0 border-b border-white/10 z-30" id="playerWrapper"><div class="drag-handle" id="dragHandle"></div><div class="w-full h-full relative flex items-center justify-center bg-black overflow-hidden" id="videoContainer"><video class="w-full h-full object-contain bg-black" id="videoPlayer" playsinline="" webkit-playsinline=""></video><iframe id="iframePlayer" class="w-full h-full absolute inset-0" style="display:none;border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe><div class="center-play-btn" id="centerPlayBtn"><i class="fas fa-play"></i></div><div class="bf-indicator" id="bfIndicator">BF: ON</div><div class="center-nav-controls" id="centerNavControls"><button class="center-nav-btn" id="centerPrevBtn" onclick="prevChannelAction(event)"><i class="fas fa-backward"></i></button><button class="center-nav-btn" id="centerNextBtn" onclick="nextChannelAction(event)"><i class="fas fa-forward"></i></button></div><div class="resize-handle" id="resizeHandle"></div><div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-0 invisible transition-all duration-300 flex flex-col justify-end p-3 z-20 pointer-events-none" id="controlsOverlay"><div class="pointer-events-auto w-full relative flex flex-col justify-end"><button class="hidden absolute top-0 right-0 m-2 bg-red-600 hover:bg-red-700 text-white w-8 h-8 rounded-full items-center justify-center text-sm shadow-xl z-[60] cursor-pointer pointer-events-auto transform transition hover:scale-110 active:scale-95 border border-white/20" id="closeFloatBtn"><i class="fas fa-times"></i></button><div class="flex justify-between items-center bg-black/60 backdrop-blur-md p-2 rounded-xl border border-white/10 shadow-lg mt-auto"><div class="flex items-center gap-3 overflow-hidden"><button class="text-white hover:text-cyan-400 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition" id="playBtn"><i class="fas fa-play"></i></button><div class="flex flex-col"><span class="text-xs font-bold text-white truncate max-w-[120px] md:max-w-[200px]" id="playingTitle">Loading...</span><span class="text-[9px] text-gray-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> LIVE</span></div></div><div class="flex items-center gap-2 text-gray-300"><div class="flex items-center gap-2 px-2"><i class="fas fa-volume-up text-xs text-gray-300" id="volumeIcon"></i><input class="w-20 accent-cyan-400 cursor-pointer" id="volumeSlider" max="100" min="0" type="range" value="100"/></div><div class="relative"><button class="w-8 h-8 hover:bg-white/10 rounded-full transition flex items-center justify-center" id="qualityBtn" title="Quality"><i class="fas fa-cog"></i></button><div class="settings-menu smooth-dropdown" id="qualityMenu"><div class="p-3 border-b border-white/10 text-xs font-bold text-gray-400">Quality</div><div id="qualityList"></div></div></div><button class="w-8 h-8 hover:bg-white/10 rounded-full transition flex items-center justify-center" id="pipBtn" title="Picture in Picture"><i class="fas fa-compress-alt"></i></button><button class="w-8 h-8 hover:bg-white/10 rounded-full transition flex items-center justify-center hidden" id="floatBtn" title="Floating Mode"><i class="fas fa-external-link-alt"></i></button><button class="w-8 h-8 hover:bg-white/10 rounded-full transition flex items-center justify-center" id="fsBtn" title="Fullscreen"><i class="fas fa-expand"></i></button></div></div></div></div><div class="absolute inset-0 flex flex-col items-center justify-center bg-black z-10 player-svg-loader" id="playerLoader"><svg height="70%" viewbox="0 0 500 500" width="70%" xmlns="http://www.w3.org/2000/svg"><defs><style>
  
  
  
@@ -2993,6 +2993,10 @@ function playChannel(ch){
  playerStatusText.innerText="Connecting...";
  document.getElementById("playingTitle").innerText=ch.name;
  centerPlayBtn.style.opacity="0";
+ // Reset centerPlayBtn display for non-iframe streams (was hidden for iframe)
+ centerPlayBtn.style.display="";
+ // Clear any previous iframe load timeout
+ if(window._iframeLoadTimeout){clearTimeout(window._iframeLoadTimeout);window._iframeLoadTimeout=null;}
  // Feature 7: Save last channel
  try{localStorage.setItem("ai_tv_last_channel",JSON.stringify({name:ch.name,url:ch.url,logo:ch.logo||"",group:ch.group||"",stream_type:ch.stream_type||"hls"}))}catch(e){}
  // Feature 9: Show speed meter
@@ -3012,6 +3016,8 @@ function playChannel(ch){
  if (iframePlayer) {
  videoPlayer.style.display = "none";
  iframePlayer.style.display = "block";
+ // Hide centerPlayBtn completely for iframe streams to allow YouTube controls to work
+ centerPlayBtn.style.display = "none";
  // YouTube URL conversion for iframe streams
  let embedUrl = ch.url;
  const ytMatch = ch.url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
@@ -3026,9 +3032,29 @@ function playChannel(ch){
  iframePlayer.allowFullscreen = true;
  iframePlayer.style.width = '100%';
  iframePlayer.style.height = '100%';
- playerLoader.classList.add("hidden");
- var sm = document.getElementById("speedMeter");
- if (sm) sm.style.display = "none";
+ // Iframe load detection: show loader until iframe loads, then hide it
+ // If iframe fails to load or stream is offline, show offline after timeout
+ var iframeLoadTimeout = setTimeout(function() {
+ if (!playerLoader.classList.contains('hidden')) {
+ playerLoader.classList.remove('hidden');
+ playerLoader.classList.add('loader-offline');
+ playerStatusText.innerText = 'Stream Offline';
+ }
+ }, 20000);
+ window._iframeLoadTimeout = iframeLoadTimeout;
+ iframePlayer.onload = function() {
+ clearTimeout(window._iframeLoadTimeout);
+ playerLoader.classList.add('hidden');
+ playerLoader.classList.remove('loader-offline');
+ var sm = document.getElementById('speedMeter');
+ if (sm) sm.style.display = 'none';
+ };
+ iframePlayer.onerror = function() {
+ clearTimeout(window._iframeLoadTimeout);
+ playerLoader.classList.remove('hidden');
+ playerLoader.classList.add('loader-offline');
+ playerStatusText.innerText = 'Stream Offline';
+ };
  // Buffering-Free Mode: delay playback by 10s for iframe
  if (bfModeEnabled) {
  iframePlayer.style.display = 'none';
@@ -3082,17 +3108,30 @@ var isHLS = urlLower.includes('.m3u8') || urlLower.includes('m3u8') || (!isDash 
 
 // Destroy previous players
 if(hls){try{hls.destroy()}catch(e){} hls=null;}
+// Stream load timeout: if no stream starts within 20s, show offline
+if(window._streamLoadTimeout){clearTimeout(window._streamLoadTimeout);}
+window._streamLoadTimeout=setTimeout(function(){
+ if(!playerLoader.classList.contains('hidden')){
+  playerLoader.classList.remove('hidden');
+  playerLoader.classList.add('loader-offline');
+  playerStatusText.innerText='Stream Offline';
+  if(hls){try{hls.destroy()}catch(e){} hls=null;}
+  if(window._dashPlayer){try{window._dashPlayer.reset()}catch(e){} window._dashPlayer=null;}
+ }
+},20000);
 if(window._dashPlayer){try{window._dashPlayer.reset()}catch(e){} window._dashPlayer=null;}
 
 if(isMP4){
  // Direct MP4/MKV/WebM playback
  videoPlayer.src=ch.url;
  videoPlayer.addEventListener("loadedmetadata",function(){
+  if(window._streamLoadTimeout){clearTimeout(window._streamLoadTimeout);window._streamLoadTimeout=null;}
   playerLoader.classList.add("hidden");playerLoader.classList.remove("loader-offline");
   var sm=document.getElementById("speedMeter");if(sm)sm.style.display="none";
   videoPlayer.play().catch(function(e){console.log("Auto-play blocked",e)});
  },{once:true});
  videoPlayer.addEventListener("error",function(){
+  if(window._streamLoadTimeout){clearTimeout(window._streamLoadTimeout);window._streamLoadTimeout=null;}
   playerLoader.classList.remove("hidden");playerLoader.classList.add("loader-offline");
   playerStatusText.innerText="";
  },{once:true});
@@ -3101,17 +3140,19 @@ if(isMP4){
  window._dashPlayer=dashjs.MediaPlayer().create();
  window._dashPlayer.initialize(videoPlayer,ch.url,true);
  window._dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED,function(){
+  if(window._streamLoadTimeout){clearTimeout(window._streamLoadTimeout);window._streamLoadTimeout=null;}
   playerLoader.classList.add("hidden");playerLoader.classList.remove("loader-offline");
   var sm=document.getElementById("speedMeter");if(sm)sm.style.display="none";
  });
  window._dashPlayer.on(dashjs.MediaPlayer.events.ERROR,function(){
+  if(window._streamLoadTimeout){clearTimeout(window._streamLoadTimeout);window._streamLoadTimeout=null;}
   playerLoader.classList.remove("hidden");playerLoader.classList.add("loader-offline");
   playerStatusText.innerText="";
  });
 }else if(Hls.isSupported()){
  // HLS playback (default)
  hls=new Hls();hls.attachMedia(videoPlayer);hls.loadSource(ch.url);
- hls.on(Hls.Events.MANIFEST_PARSED,(e,data)=>{playerLoader.classList.add("hidden");playerLoader.classList.remove("loader-offline");var sm=document.getElementById("speedMeter");if(sm)sm.style.display="none";videoPlayer.play().catch(e=>console.log("Auto-play blocked",e));setupQuality(data.levels)});
+ hls.on(Hls.Events.MANIFEST_PARSED,(e,data)=>{if(window._streamLoadTimeout){clearTimeout(window._streamLoadTimeout);window._streamLoadTimeout=null;}playerLoader.classList.add("hidden");playerLoader.classList.remove("loader-offline");var sm=document.getElementById("speedMeter");if(sm)sm.style.display="none";videoPlayer.play().catch(e=>console.log("Auto-play blocked",e));setupQuality(data.levels)});
  hls.on(Hls.Events.FRAG_LOADED,(e,data)=>{measureRealSpeed();});
  hls.on(Hls.Events.ERROR,(e,data)=>{
  if(data.fatal){
@@ -3125,6 +3166,7 @@ if(isMP4){
  try{hls.recoverMediaError();}catch(re){hls.destroy();}
  break;
  default:
+ if(window._streamLoadTimeout){clearTimeout(window._streamLoadTimeout);window._streamLoadTimeout=null;}
  playerLoader.classList.remove("hidden");
  playerLoader.classList.add("loader-offline");
  playerStatusText.innerText="";
@@ -3140,17 +3182,20 @@ if(isMP4){
  var sm=document.getElementById("speedMeter");if(sm)sm.style.display="block";
  });
  videoPlayer.addEventListener("playing",function(){
+ if(window._streamLoadTimeout){clearTimeout(window._streamLoadTimeout);window._streamLoadTimeout=null;}
  playerLoader.classList.add("hidden");
  var sm=document.getElementById("speedMeter");if(sm)sm.style.display="none";
  });
  videoPlayer.addEventListener("canplay",function(){
+ if(window._streamLoadTimeout){clearTimeout(window._streamLoadTimeout);window._streamLoadTimeout=null;}
  playerLoader.classList.add("hidden");
  var sm=document.getElementById("speedMeter");if(sm)sm.style.display="none";
  });
 }else if(videoPlayer.canPlayType("application/vnd.apple.mpegurl")){
  videoPlayer.src=ch.url;
- videoPlayer.addEventListener("loadedmetadata",()=>{playerLoader.classList.add("hidden");playerLoader.classList.remove("loader-offline");var sm=document.getElementById("speedMeter");if(sm)sm.style.display="none";videoPlayer.play()},{once:true});
+ videoPlayer.addEventListener("loadedmetadata",()=>{if(window._streamLoadTimeout){clearTimeout(window._streamLoadTimeout);window._streamLoadTimeout=null;}playerLoader.classList.add("hidden");playerLoader.classList.remove("loader-offline");var sm=document.getElementById("speedMeter");if(sm)sm.style.display="none";videoPlayer.play()},{once:true});
  videoPlayer.addEventListener("error",()=>{
+ if(window._streamLoadTimeout){clearTimeout(window._streamLoadTimeout);window._streamLoadTimeout=null;}
  playerLoader.classList.remove("hidden");
  playerLoader.classList.add("loader-offline");
  playerStatusText.innerText="";
@@ -3248,7 +3293,8 @@ function resetIdleTimer() {
  clearTimeout(idleTimer);
  
  idleTimer = setTimeout(() => {
- if (!videoPlayer.paused) {
+ var isIframePlaying = iframePlayer && iframePlayer.style.display !== "none";
+ if (!videoPlayer.paused || isIframePlaying) {
  toggleControls(false);
  }
  }, 3000); 
@@ -3257,7 +3303,8 @@ function resetIdleTimer() {
  playerWrapper.addEventListener(evt, resetIdleTimer, { passive: true });
 });
 playerWrapper.addEventListener('mouseleave', () => {
- if (!videoPlayer.paused) {
+ var isIframePlaying = iframePlayer && iframePlayer.style.display !== 'none';
+ if (!videoPlayer.paused || isIframePlaying) {
  clearTimeout(idleTimer);
  toggleControls(false);
  }
