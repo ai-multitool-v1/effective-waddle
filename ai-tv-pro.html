@@ -1618,8 +1618,12 @@ async function fetchInlineAds() {
 }
 function renderBannerAd(ad, container) {
  if (!ad) return;
+ // Only render if there's actual visible content (image, title, or description)
+ const hasContent = (ad.image_url && ad.image_url.trim()) ||
+                   (ad.title && ad.title.trim()) ||
+                   (ad.description && ad.description.trim());
+ if (!hasContent) return;
  container.classList.remove("hidden");
- // Add margin only when ad content is actually rendered
  container.classList.add("mb-4");
  const banner = document.createElement("div");
  banner.className = "ad-banner";
@@ -2345,6 +2349,7 @@ const CHANNELS_PER_PAGE=50;
 let hls=null;
 let isFloating=false;
 let currentPlaylistSource="default"; 
+var bfModeEnabled = (localStorage.getItem('aitv_bf_mode') === 'on');
 const playerWrapper=document.getElementById("playerWrapper");
 const videoPlayer=document.getElementById("videoPlayer");
 const grid=document.getElementById("channelGrid");
@@ -4207,8 +4212,7 @@ function toggleTheme() {
   }
 })();
 
-// Feature 6: Buffering-Free Mode
-var bfModeEnabled = false;
+// Feature 6: Buffering-Free Mode (bfModeEnabled declared at top with other globals)
 
 function toggleBFMode() {
   const cb = document.getElementById('bfModeCheckbox');
@@ -4287,11 +4291,9 @@ document.getElementById('bfModeToggleRow').addEventListener('click', function(e)
   toggleBFMode();
 });
 
-// Load BF mode setting
+// Load BF mode UI (bfModeEnabled already initialized at top from localStorage)
 (function() {
-  const saved = localStorage.getItem('aitv_bf_mode');
-  if (saved === 'on') {
-    bfModeEnabled = true;
+  if (bfModeEnabled) {
     const cb = document.getElementById('bfModeCheckbox');
     if (cb) cb.checked = true;
     // Show indicator briefly as toast, then auto-hide

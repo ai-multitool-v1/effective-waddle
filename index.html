@@ -4516,7 +4516,7 @@
     }
 
     // ===== BF MODE TOGGLE =====
-    let bfModeEnabled = false;
+    var bfModeEnabled = (localStorage.getItem('ai_tv_pro_bf_mode') === 'on');
     function toggleBFMode() {
       bfModeEnabled = !bfModeEnabled;
       const toggle = document.getElementById('bfModeSidebarToggle');
@@ -4536,9 +4536,8 @@
       }
       localStorage.setItem('ai_tv_pro_bf_mode', bfModeEnabled ? 'on' : 'off');
     }
-    // Apply saved BF mode on load - show briefly as toast
-    if (localStorage.getItem('ai_tv_pro_bf_mode') === 'on') {
-      bfModeEnabled = true;
+    // Apply saved BF mode UI on load - show briefly as toast (bfModeEnabled already initialized from localStorage)
+    if (bfModeEnabled) {
       const toggle = document.getElementById('bfModeSidebarToggle');
       if (toggle) toggle.classList.add('active');
       const indicator = document.getElementById('bfIndicator');
