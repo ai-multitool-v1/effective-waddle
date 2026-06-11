@@ -1958,6 +1958,7 @@ async function loadAdScripts() {
    const pos = script.position || "both";
    const isMenu = pos === "menu" || pos === "both";
    const isWorldcup = pos === "worldcup" || pos === "both";
+   const scriptCode = script.script_code || '';
 
    if (isMenu) {
     const sidebarBody = document.querySelector("#settingsSidebar .sidebar-body");
@@ -1965,19 +1966,8 @@ async function loadAdScripts() {
      const scriptContainer = document.createElement("div");
      scriptContainer.id = "adScript_menu_" + script.id;
      scriptContainer.className = "sidebar-section mb-3";
-     // Feature A: Detect iframe-based scripts and use sandboxed iframe
-     if (isIframeScript(script.script_code)) {
-      const sandboxedIframe = document.createElement("iframe");
-      sandboxedIframe.style.cssText = "width:100%;border:none;min-height:50px;overflow:hidden;";
-      sandboxedIframe.sandbox = "allow-scripts allow-popups allow-popups-to-escape-sandbox";
-      sandboxedIframe.srcdoc = '<!DOCTYPE html><html><head><style>body{margin:0;padding:0;background:transparent;}</style></head><body>' + script.script_code.replace(/</g,'<').replace(/>/g,'>') + '</body></html>';
-      // Actually we need the real code in srcdoc, not escaped
-      sandboxedIframe.srcdoc = '<!DOCTYPE html><html><head><style>body{margin:0;padding:0;background:transparent;}</style></head><body>' + script.script_code + '</body></html>';
-      scriptContainer.appendChild(sandboxedIframe);
-     } else {
-      scriptContainer.innerHTML = script.script_code;
-     }
      sidebarBody.appendChild(scriptContainer);
+     injectAdScript(scriptContainer, scriptCode);
     }
    }
 
@@ -1986,44 +1976,72 @@ async function loadAdScripts() {
     if (wcBody) {
      const scriptContainer = document.createElement("div");
      scriptContainer.id = "adScript_wc_" + script.id;
-     // Feature A: Detect iframe-based scripts and use sandboxed iframe
-     if (isIframeScript(script.script_code)) {
-      const sandboxedIframe = document.createElement("iframe");
-      sandboxedIframe.style.cssText = "width:100%;border:none;min-height:50px;overflow:hidden;";
-      sandboxedIframe.sandbox = "allow-scripts allow-popups allow-popups-to-escape-sandbox";
-      sandboxedIframe.srcdoc = '<!DOCTYPE html><html><head><style>body{margin:0;padding:0;background:transparent;}</style></head><body>' + script.script_code + '</body></html>';
-      scriptContainer.appendChild(sandboxedIframe);
-     } else {
-      scriptContainer.innerHTML = script.script_code;
-     }
      wcBody.appendChild(scriptContainer);
+     injectAdScript(scriptContainer, scriptCode);
     }
    }
 
-   // Also execute any <script> tags within the injected HTML (non-iframe scripts)
-   if (!isIframeScript(script.script_code)) {
-    try {
-     const tempDiv = document.createElement("div");
-     tempDiv.innerHTML = script.script_code;
-     const inlineScripts = tempDiv.querySelectorAll("script");
-     inlineScripts.forEach(s => {
-      const newScript = document.createElement("script");
-      if (s.src) { newScript.src = s.src; }
-      else { newScript.textContent = s.textContent; }
-      if (s.async) newScript.async = true;
-      document.body.appendChild(newScript);
-     });
-    } catch (se) { console.warn("Ad script exec error:", se); }
+   // Also inject in main page body for global ad coverage
+   if (pos === "both") {
+    const pageContainer = document.createElement("div");
+    pageContainer.id = "adScript_page_" + script.id;
+    pageContainer.style.cssText = "width:100%;min-height:0;";
+    document.body.appendChild(pageContainer);
+    injectAdScript(pageContainer, scriptCode);
    }
   });
  } catch (e) { console.warn("Ad scripts load error:", e); }
 }
 
-// Feature A: Helper to detect iframe-based scripts
+// Inject ad script: handles both <script> tags and iframe-based scripts
+function injectAdScript(container, code) {
+ if (!code) return;
+ // Parse the code to find and properly execute all <script> tags
+ var tempDiv = document.createElement("div");
+ tempDiv.innerHTML = code;
+ // First, insert any non-script HTML into the container
+ var scripts = tempDiv.querySelectorAll("script");
+ var hasIframe = code.toLowerCase().indexOf('<iframe') !== -1;
+ 
+ if (hasIframe) {
+  // If code contains iframe, use sandboxed iframe approach
+  var sandboxedIframe = document.createElement("iframe");
+  sandboxedIframe.style.cssText = "width:100%;border:none;min-height:60px;overflow:hidden;";
+  sandboxedIframe.sandbox = "allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms";
+  sandboxedIframe.srcdoc = '<!DOCTYPE html><html><head><style>body{margin:0;padding:0;background:transparent;}</style></head><body>' + code + '</body></html>';
+  container.appendChild(sandboxedIframe);
+ } else {
+  // Insert HTML content (without scripts) first
+  // Remove script tags from tempDiv before inserting
+  scripts.forEach(function(s) { s.parentNode.removeChild(s); });
+  container.appendChild(tempDiv);
+  // Now manually create and execute each script tag
+  var allScripts = (new DOMParser()).parseFromString(code, "text/html").querySelectorAll("script");
+  allScripts.forEach(function(s) {
+   var newScript = document.createElement("script");
+   if (s.src) {
+    newScript.src = s.src;
+    newScript.async = s.async || false;
+    if (s.getAttribute("data-zone")) newScript.setAttribute("data-zone", s.getAttribute("data-zone"));
+    if (s.getAttribute("data-cfasync")) newScript.setAttribute("data-cfasync", s.getAttribute("data-cfasync"));
+    // Copy all data-* attributes
+    for (var i = 0; i < s.attributes.length; i++) {
+     var attr = s.attributes[i];
+     if (attr.name.startsWith("data-")) newScript.setAttribute(attr.name, attr.value);
+    }
+   } else {
+    newScript.textContent = s.textContent;
+   }
+   container.appendChild(newScript);
+  });
+ }
+}
+
+// Feature A: Helper to detect iframe-based scripts (DEPRECATED - using injectAdScript now)
 function isIframeScript(code) {
  if (!code) return false;
  var lower = code.toLowerCase();
- return lower.indexOf('<iframe') !== -1 || lower.indexOf('document.write') !== -1 || lower.indexOf('document.writeln') !== -1;
+ return lower.indexOf('<iframe') !== -1;
 }
 async function initWorldCupSchedule() {
  if (!supabaseAvailable) {
