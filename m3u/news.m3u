@@ -1,0 +1,3 @@
+#EXTM3U
+#EXTINF:-1 tvg-logo="https://i.imgur.com/example1.png" group-title="News",News Channel 1
+https://example.com/news1.m3u8
