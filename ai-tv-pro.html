@@ -1916,21 +1916,51 @@ function renderWorldCupMatches(matches) {
 }
 async function initSupabaseContent() {
  // ===== STEP 1: Load channels & categories from frontend (GitHub raw) first =====
- // This reduces Supabase API requests significantly
+ // This reduces Supabase API requests significantly (bulk data from GitHub)
  if (FRONTEND_ENABLED) {
   console.log("[Init] Loading channels from frontend (GitHub raw)...");
   await loadFrontendChannels();
   await loadFrontendCategories();
-  // If frontend loaded channels successfully, render them immediately
   if (_frontendLoaded && allChannels.length > 0) {
    renderCategories(allChannels);
    renderGrid(allChannels);
-   autoPlayLastChannel();
-   console.log("[Init] Frontend channels loaded — skipping Supabase channel fetch");
+   console.log("[Init] Frontend channels loaded (" + allChannels.length + " channels)");
   }
  }
 
- // ===== STEP 2: Continue with Supabase content (ads, etc.) =====
+ // ===== STEP 2: Merge admin channels from Supabase on top of frontend channels =====
+ // Admin can add channels via Supabase even when frontend (GitHub) has data.
+ // These admin channels are merged with frontend channels (no duplicates).
+ if (supabaseAvailable) {
+  var adminChs = await fetchAdminChannels("all");
+  if (adminChs.length > 0) {
+   var converted = adminChs.map(adminChannelToInternal);
+   var existingKeys = new Set(allChannels.map(function(c) { return c.name + "|" + c.url; }));
+   var newAdminChannels = converted.filter(function(c) { return !existingKeys.has(c.name + "|" + c.url); });
+   if (newAdminChannels.length > 0) {
+    allChannels = [...allChannels, ...newAdminChannels];
+    renderCategories(allChannels);
+    renderGrid(allChannels);
+    console.log("[Init] Merged " + newAdminChannels.length + " admin channels from Supabase");
+   }
+  }
+  // Also load admin categories and merge with frontend categories
+  const categories = await fetchAdminCategories();
+  // Merge admin categories into adminCategories (frontend categories already added)
+  categories.forEach(function(cat) {
+   if (adminCategories.indexOf(cat) === -1) {
+    adminCategories.push(cat);
+   }
+  });
+  renderAdminCategoryButtons(adminCategories);
+  renderCategories(allChannels);
+ }
+
+ // If frontend loaded channels, auto-play now (before ads finish loading)
+ if (_frontendLoaded && allChannels.length > 0) {
+  autoPlayLastChannel();
+ }
+
  if (!supabaseAvailable) return;
  
  const bannerAds = await fetchBannerAds();
@@ -1970,12 +2000,7 @@ async function initSupabaseContent() {
  // Load and inject ad scripts (Adsterra, Monetag, PropellerAds, etc.)
  await loadAdScripts();
 
- // Load admin categories and render dynamic category buttons
- const categories = await fetchAdminCategories();
- adminCategories = categories;
- renderAdminCategoryButtons(categories);
- // Also update bottom category drawer with admin categories
- renderCategories(allChannels);
+ // Categories and admin category buttons already loaded in Step 2 above
 }
 
 // ===== Ad Scripts System (Adsterra/Monetag/PropellerAds) =====
@@ -2881,8 +2906,9 @@ async function loadRegion(code,name){
   await loadFrontendChannels();
   await loadFrontendCategories();
  }
- // Also load admin Default category channels (Supabase fallback)
- const adminChs=await fetchAdminChannels("Default");
+ // Also load ALL admin channels from Supabase and merge on top of frontend channels
+ // This ensures admin-added channels always appear alongside frontend channels
+ const adminChs=await fetchAdminChannels("all");
  if(adminChs.length>0){
  const converted=adminChs.map(adminChannelToInternal);
  const existingNames=new Set(allChannels.map(c=>c.name));
@@ -2942,27 +2968,49 @@ function adminChannelToInternal(ch) {
 }
 
 // Load admin channels and merge with existing channels
-// Checks frontend (GitHub raw) first, then falls back to Supabase
+// Always merges: Frontend (GitHub) channels + Supabase admin channels
 async function loadAdminChannelsToGrid(category) {
  showChannelLoader();
 
- // Try frontend first (if enabled and data is available)
+ var mergedChannels = [];
+
+ // Step 1: Get frontend channels for this category (if enabled)
  if (FRONTEND_ENABLED && _frontendLoaded) {
   var feChannels = await fetchFrontendChannelsByCategory(category);
   if (feChannels.length > 0) {
-   var converted = feChannels.map(frontendChannelToInternal);
-   const existingNames = new Set(allChannels.map(c => c.name));
-   const newChannels = converted.filter(c => !existingNames.has(c.name));
-   allChannels = [...allChannels, ...newChannels];
-   renderCategories(allChannels);
-   renderGrid(allChannels);
-   autoPlayLastChannel();
-   return; // Frontend had the data, no Supabase request needed
+   mergedChannels = feChannels.map(frontendChannelToInternal);
   }
  }
 
- // Fallback: fetch from Supabase
- const channels = await fetchAdminChannels(category);
+ // Step 2: Also get Supabase admin channels for this category and merge
+ if (supabaseAvailable) {
+  var supaChannels = await fetchAdminChannels(category);
+  if (supaChannels.length > 0) {
+   var converted = supaChannels.map(adminChannelToInternal);
+   var existingKeys = new Set(mergedChannels.map(function(c) { return c.name + "|" + c.url; }));
+   converted.forEach(function(c) {
+    if (!existingKeys.has(c.name + "|" + c.url)) {
+     mergedChannels.push(c);
+    }
+   });
+  }
+ }
+
+ // Step 3: Merge result with existing allChannels
+ if (mergedChannels.length > 0) {
+  var existingNames = new Set(allChannels.map(c => c.name));
+  var newChannels = mergedChannels.filter(c => !existingNames.has(c.name));
+  allChannels = [...allChannels, ...newChannels];
+  renderCategories(allChannels);
+  renderGrid(allChannels);
+  autoPlayLastChannel();
+ } else {
+  if (allChannels.length === 0) {
+   grid.innerHTML = '<div class="channel-loader"><svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg"><circle cx="25" cy="25" r="20" fill="none" stroke="#ff0055" stroke-width="3" stroke-dasharray="31.4 31.4" stroke-linecap="round"/></svg><span>No channels found.</span></div>';
+   document.getElementById("loadMoreBtn").style.display = "none";
+  }
+ }
+}
  if (channels.length > 0) {
  adminChannels = channels.map(adminChannelToInternal);
  // Merge with existing allChannels (avoid duplicates by name)
@@ -2981,34 +3029,45 @@ async function loadAdminChannelsToGrid(category) {
  }
 }
 
-// Load only admin channels (replace current view)
+// Load only channels for a category (replace current view)
+// Always merges: Frontend (GitHub) channels + Supabase admin channels
 async function loadAdminCategoryOnly(category) {
  showChannelLoader();
 
- // Try frontend first (if enabled and data is available)
+ var mergedChannels = [];
+
+ // Step 1: Get frontend channels for this category (if enabled)
  if (FRONTEND_ENABLED && _frontendLoaded) {
   var feChannels = await fetchFrontendChannelsByCategory(category);
   if (feChannels.length > 0) {
-   var converted = feChannels.map(frontendChannelToInternal);
-   allChannels = converted;
-   renderCategories(allChannels);
-   renderGrid(allChannels);
-   return; // Frontend had the data, no Supabase request needed
+   mergedChannels = feChannels.map(frontendChannelToInternal);
   }
  }
 
- // Fallback: fetch from Supabase
- const channels = await fetchAdminChannels(category);
- if (channels.length > 0) {
- adminChannels = channels.map(adminChannelToInternal);
- allChannels = adminChannels;
- renderCategories(allChannels);
- renderGrid(allChannels);
+ // Step 2: Also get Supabase admin channels for this category and merge on top
+ if (supabaseAvailable) {
+  var supaChannels = await fetchAdminChannels(category);
+  if (supaChannels.length > 0) {
+   var converted = supaChannels.map(adminChannelToInternal);
+   var existingKeys = new Set(mergedChannels.map(function(c) { return c.name + "|" + c.url; }));
+   converted.forEach(function(c) {
+    if (!existingKeys.has(c.name + "|" + c.url)) {
+     mergedChannels.push(c);
+    }
+   });
+  }
+ }
+
+ // Step 3: Replace allChannels with merged result
+ if (mergedChannels.length > 0) {
+  allChannels = mergedChannels;
+  renderCategories(allChannels);
+  renderGrid(allChannels);
  } else {
- allChannels = [];
- grid.innerHTML = '<div class="channel-loader"><svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg"><circle cx="25" cy="25" r="20" fill="none" stroke="#ff0055" stroke-width="3" stroke-dasharray="31.4 31.4" stroke-linecap="round"/></svg><span>No channels found in this category.</span></div>';
- document.getElementById("loadMoreBtn").style.display = "none";
- document.getElementById("emptyState").classList.remove("hidden");
+  allChannels = [];
+  grid.innerHTML = '<div class="channel-loader"><svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg"><circle cx="25" cy="25" r="20" fill="none" stroke="#ff0055" stroke-width="3" stroke-dasharray="31.4 31.4" stroke-linecap="round"/></svg><span>No channels found in this category.</span></div>';
+  document.getElementById("loadMoreBtn").style.display = "none";
+  document.getElementById("emptyState").classList.remove("hidden");
  }
 }
 
