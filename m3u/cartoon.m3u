@@ -1,5 +1,0 @@
-#EXTM3U
-#EXTINF:-1 tvg-logo="https://i.imgur.com/cn_logo.png" group-title="Cartoon",Cartoon Network
-https://cdn.cartoonnetwork.com/live/cn.m3u8
-#EXTINF:-1 tvg-logo="https://i.imgur.com/nick_logo.png" group-title="Cartoon",Nickelodeon
-https://cdn.nick.com/live/nick.m3u8
