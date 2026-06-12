@@ -1,0 +1,14 @@
+[
+  {
+    "channel_name": "Channel Name Example",
+    "stream_url": "https://example.com/stream.m3u8",
+    "logo_url": "https://example.com/logo.png",
+    "category": "Default",
+    "stream_type": "hls",
+    "sort_order": 1,
+    "is_visible": true,
+    "media_data": "",
+    "media_mime": "",
+    "media_filename": ""
+  }
+]

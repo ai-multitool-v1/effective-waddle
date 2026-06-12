@@ -1915,6 +1915,22 @@ function renderWorldCupMatches(matches) {
  });
 }
 async function initSupabaseContent() {
+ // ===== STEP 1: Load channels & categories from frontend (GitHub raw) first =====
+ // This reduces Supabase API requests significantly
+ if (FRONTEND_ENABLED) {
+  console.log("[Init] Loading channels from frontend (GitHub raw)...");
+  await loadFrontendChannels();
+  await loadFrontendCategories();
+  // If frontend loaded channels successfully, render them immediately
+  if (_frontendLoaded && allChannels.length > 0) {
+   renderCategories(allChannels);
+   renderGrid(allChannels);
+   autoPlayLastChannel();
+   console.log("[Init] Frontend channels loaded — skipping Supabase channel fetch");
+  }
+ }
+
+ // ===== STEP 2: Continue with Supabase content (ads, etc.) =====
  if (!supabaseAvailable) return;
  
  const bannerAds = await fetchBannerAds();
@@ -2359,6 +2375,274 @@ async function initWorldCupSchedule() {
 const API_COUNTRIES="https://iptv-org.github.io/api/countries.json";
 const PLAYLIST_BASE="https://iptv-org.github.io/iptv/countries/";
 const TELEGRAM_USERNAME="Asif_khan1357";
+
+// ===== FRONTEND CHANNEL/CATEGORY SYSTEM (GitHub Raw JSON) =====
+// This system loads channels & categories from GitHub raw JSON files
+// to reduce Supabase API requests and avoid hitting free tier limits.
+// Admin (Supabase) still works as fallback — both systems coexist.
+//
+// HOW TO USE:
+// 1. Create a JSON file for categories and host it on GitHub (raw link)
+// 2. Create a JSON file for each category's channels and host on GitHub (raw link)
+// 3. Set the URLs below in FRONTEND_CATEGORIES_URL and FRONTEND_CHANNELS_URL
+// 4. Set FRONTEND_ENABLED = true to enable frontend fetching
+//
+// CATEGORIES JSON FORMAT (categories.json):
+// [
+//   "Sports",
+//   "News",
+//   "Entertainment",
+//   "Music",
+//   "Cartoon",
+//   "Default"
+// ]
+//
+// CHANNELS JSON FORMAT (channels.json or per-category files):
+// [
+//   {
+//     "channel_name": "Channel Name",
+//     "stream_url": "https://example.com/stream.m3u8",
+//     "logo_url": "https://example.com/logo.png",
+//     "category": "Sports",
+//     "stream_type": "hls",
+//     "sort_order": 1,
+//     "is_visible": true,
+//     "media_data": "",
+//     "media_mime": "",
+//     "media_filename": ""
+//   }
+// ]
+//
+// Single file with all channels (FRONTEND_CHANNELS_URL):
+// Put ALL channels in one JSON file, category field separates them.
+// OR per-category files (FRONTEND_CATEGORY_CHANNEL_MAP):
+// Map category name → GitHub raw URL for that category's channels only.
+
+// --- CONFIGURATION: Set your GitHub raw URLs here ---
+var FRONTEND_ENABLED = true;  // Set to true to enable frontend channel loading
+// Single JSON file containing ALL channels (each channel has a "category" field)
+// Leave empty string "" to disable single-file mode
+var FRONTEND_CHANNELS_URL = "https://raw.githubusercontent.com/ai-multitool-v1/effective-waddle/main/channels.json";
+// Single JSON file containing category names array
+// Leave empty string "" to auto-extract categories from channels JSON
+var FRONTEND_CATEGORIES_URL = "https://raw.githubusercontent.com/ai-multitool-v1/effective-waddle/main/categories.json";
+// Per-category channel files (optional, overrides single file for specific categories)
+// Format: { "CategoryName": "https://raw.githubusercontent.com/.../sports.json", ... }
+// Leave empty {} to disable per-category mode
+var FRONTEND_CATEGORY_CHANNEL_MAP = {};
+// Cache duration in milliseconds (default: 30 minutes)
+var FRONTEND_CACHE_TTL = 30 * 60 * 1000;
+// --- END CONFIGURATION ---
+
+// Frontend data cache (in-memory + localStorage)
+var _frontendChannelsCache = null;   // Array of all channels from frontend
+var _frontendCategoriesCache = null; // Array of category names from frontend
+var _frontendCacheTimestamp = 0;     // When cache was last refreshed
+var _frontendLoaded = false;         // Whether frontend data has been loaded at least once
+
+// Get cache key for localStorage
+function _frontendCacheKey(type) {
+ return "aitv_frontend_" + type + "_cache";
+}
+
+// Save data to localStorage cache
+function _frontendSaveCache(type, data) {
+ try {
+  localStorage.setItem(_frontendCacheKey(type), JSON.stringify(data));
+  localStorage.setItem(_frontendCacheKey(type + "_ts"), Date.now().toString());
+ } catch (e) { /* localStorage full or unavailable */ }
+}
+
+// Load data from localStorage cache (returns null if expired/missing)
+function _frontendLoadCache(type) {
+ try {
+  var ts = parseInt(localStorage.getItem(_frontendCacheKey(type + "_ts")) || "0");
+  if (Date.now() - ts > FRONTEND_CACHE_TTL) return null; // expired
+  var raw = localStorage.getItem(_frontendCacheKey(type));
+  if (!raw) return null;
+  return JSON.parse(raw);
+ } catch (e) { return null; }
+}
+
+// Convert frontend JSON channel object to internal format
+// Frontend format matches Supabase tv_channels schema so we reuse adminChannelToInternal()
+function frontendChannelToInternal(ch) {
+ return {
+  name: ch.channel_name || ch.name || '',
+  url: ch.stream_url || ch.url || '',
+  logo: ch.logo_url || ch.logo_data || ch.logo || '',
+  group: ch.category || ch.group || 'Default',
+  stream_type: ch.stream_type || 'hls',
+  media_data: ch.media_data || '',
+  media_mime: ch.media_mime || '',
+  media_filename: ch.media_filename || '',
+  id: ch.id || null
+ };
+}
+
+// Fetch categories from frontend (GitHub raw JSON)
+async function fetchFrontendCategories() {
+ if (!FRONTEND_ENABLED) return [];
+
+ // Try memory cache first
+ if (_frontendCategoriesCache) return _frontendCategoriesCache;
+
+ // Try localStorage cache
+ var cached = _frontendLoadCache("categories");
+ if (cached) {
+  _frontendCategoriesCache = cached;
+  return cached;
+ }
+
+ // Fetch from URL
+ if (!FRONTEND_CATEGORIES_URL) return [];
+ try {
+  var response = await fetch(FRONTEND_CATEGORIES_URL);
+  if (!response.ok) { console.warn("[Frontend] Categories fetch failed:", response.status); return []; }
+  var data = await response.json();
+  if (!Array.isArray(data)) { console.warn("[Frontend] Categories JSON is not an array"); return []; }
+  _frontendCategoriesCache = data;
+  _frontendSaveCache("categories", data);
+  console.log("[Frontend] Loaded", data.length, "categories from GitHub");
+  return data;
+ } catch (e) { console.warn("[Frontend] Categories fetch error:", e); return []; }
+}
+
+// Fetch ALL channels from frontend (single JSON file)
+async function fetchFrontendChannels() {
+ if (!FRONTEND_ENABLED) return [];
+
+ // Try memory cache first
+ if (_frontendChannelsCache) return _frontendChannelsCache;
+
+ // Try localStorage cache
+ var cached = _frontendLoadCache("channels");
+ if (cached) {
+  _frontendChannelsCache = cached;
+  return cached;
+ }
+
+ // Fetch from URL
+ if (!FRONTEND_CHANNELS_URL) return [];
+ try {
+  var response = await fetch(FRONTEND_CHANNELS_URL);
+  if (!response.ok) { console.warn("[Frontend] Channels fetch failed:", response.status); return []; }
+  var data = await response.json();
+  if (!Array.isArray(data)) { console.warn("[Frontend] Channels JSON is not an array"); return []; }
+  _frontendChannelsCache = data;
+  _frontendSaveCache("channels", data);
+  console.log("[Frontend] Loaded", data.length, "channels from GitHub");
+  return data;
+ } catch (e) { console.warn("[Frontend] Channels fetch error:", e); return []; }
+}
+
+// Fetch channels for a specific category from frontend
+// Checks per-category map first, then filters from all-channels file
+async function fetchFrontendChannelsByCategory(category) {
+ if (!FRONTEND_ENABLED) return [];
+ if (!category || category === "all") {
+  var all = await fetchFrontendChannels();
+  return all;
+ }
+
+ // Check if there's a per-category URL
+ if (FRONTEND_CATEGORY_CHANNEL_MAP && FRONTEND_CATEGORY_CHANNEL_MAP[category]) {
+  var catUrl = FRONTEND_CATEGORY_CHANNEL_MAP[category];
+  try {
+   var response = await fetch(catUrl);
+   if (!response.ok) { console.warn("[Frontend] Per-category fetch failed:", catUrl); }
+   else {
+    var data = await response.json();
+    if (Array.isArray(data)) return data;
+   }
+  } catch (e) { console.warn("[Frontend] Per-category fetch error:", e); }
+ }
+
+ // Fallback: filter from all-channels cache
+ var all = await fetchFrontendChannels();
+ return all.filter(function(ch) {
+  var cat = ch.category || ch.group || 'Default';
+  return cat.toLowerCase() === category.toLowerCase();
+ });
+}
+
+// Load frontend channels and merge with existing allChannels
+// Called during app startup as an alternative to Supabase channel loading
+async function loadFrontendChannels() {
+ if (!FRONTEND_ENABLED) return false;
+
+ var channels = await fetchFrontendChannels();
+ if (channels.length === 0) {
+  console.log("[Frontend] No channels loaded from frontend, will use Supabase fallback");
+  return false;
+ }
+
+ var converted = channels.map(frontendChannelToInternal);
+ // Merge with existing allChannels (avoid duplicates by name+url)
+ var existingKeys = new Set(allChannels.map(function(c) { return c.name + "|" + c.url; }));
+ var newChannels = converted.filter(function(c) { return !existingKeys.has(c.name + "|" + c.url); });
+ allChannels = [...allChannels, ...newChannels];
+
+ console.log("[Frontend] Merged", newChannels.length, "new channels (total:", allChannels.length, ")");
+ _frontendLoaded = true;
+ return true;
+}
+
+// Load only frontend channels for a specific category (replaces current view)
+// This is the frontend equivalent of loadAdminCategoryOnly()
+async function loadFrontendCategoryOnly(category) {
+ showChannelLoader();
+ var channels = await fetchFrontendChannelsByCategory(category);
+ if (channels.length > 0) {
+  var converted = channels.map(frontendChannelToInternal);
+  allChannels = converted;
+  renderCategories(allChannels);
+  renderGrid(allChannels);
+ } else {
+  // Fallback to Supabase if frontend returns nothing
+  console.log("[Frontend] No channels for category:", category, "— falling back to Supabase");
+  await loadAdminCategoryOnly(category);
+ }
+}
+
+// Load frontend categories and render them
+// Returns the categories array (empty if failed)
+async function loadFrontendCategories() {
+ if (!FRONTEND_ENABLED) return [];
+
+ var cats = await fetchFrontendCategories();
+
+ // If no categories URL or empty result, auto-extract from channels
+ if (cats.length === 0 && FRONTEND_CHANNELS_URL) {
+  var channels = await fetchFrontendChannels();
+  var extractedCats = [];
+  var seen = {};
+  channels.forEach(function(ch) {
+   var cat = ch.category || ch.group || 'Default';
+   if (!seen[cat]) { seen[cat] = true; extractedCats.push(cat); }
+  });
+  cats = extractedCats;
+  _frontendCategoriesCache = cats;
+  _frontendSaveCache("categories", cats);
+ }
+
+ if (cats.length > 0) {
+  // Add frontend categories to adminCategories so they show up in sidebar & bottom bar
+  cats.forEach(function(cat) {
+   if (adminCategories.indexOf(cat) === -1) {
+    adminCategories.push(cat);
+   }
+  });
+  renderAdminCategoryButtons(adminCategories);
+  renderCategories(allChannels);
+  console.log("[Frontend] Loaded", cats.length, "categories:", cats.join(", "));
+ }
+
+ return cats;
+}
+
+// ===== END FRONTEND CHANNEL/CATEGORY SYSTEM =====
+
 // Channels loaded from admin via Supabase tv_channels table
 async function m3uFetch(url){
  try{const r=await fetch(url);if(r.ok) return await r.text()}catch(e){console.warn("Fetch failed:",url,e)}
@@ -2592,7 +2876,12 @@ async function loadRegion(code,name){
  try{const txt=await m3uFetch(`${PLAYLIST_BASE}${code}.m3u`);if(txt) allData+=txt+"\n"}catch(e){}
  // Parse M3U data if available
  if(allData){loadChannelsFromM3UText(allData)}
- // Also load admin Default category channels
+ // Load frontend channels from GitHub raw (if enabled) before Supabase
+ if (FRONTEND_ENABLED) {
+  await loadFrontendChannels();
+  await loadFrontendCategories();
+ }
+ // Also load admin Default category channels (Supabase fallback)
  const adminChs=await fetchAdminChannels("Default");
  if(adminChs.length>0){
  const converted=adminChs.map(adminChannelToInternal);
@@ -2653,8 +2942,26 @@ function adminChannelToInternal(ch) {
 }
 
 // Load admin channels and merge with existing channels
+// Checks frontend (GitHub raw) first, then falls back to Supabase
 async function loadAdminChannelsToGrid(category) {
  showChannelLoader();
+
+ // Try frontend first (if enabled and data is available)
+ if (FRONTEND_ENABLED && _frontendLoaded) {
+  var feChannels = await fetchFrontendChannelsByCategory(category);
+  if (feChannels.length > 0) {
+   var converted = feChannels.map(frontendChannelToInternal);
+   const existingNames = new Set(allChannels.map(c => c.name));
+   const newChannels = converted.filter(c => !existingNames.has(c.name));
+   allChannels = [...allChannels, ...newChannels];
+   renderCategories(allChannels);
+   renderGrid(allChannels);
+   autoPlayLastChannel();
+   return; // Frontend had the data, no Supabase request needed
+  }
+ }
+
+ // Fallback: fetch from Supabase
  const channels = await fetchAdminChannels(category);
  if (channels.length > 0) {
  adminChannels = channels.map(adminChannelToInternal);
@@ -2677,6 +2984,20 @@ async function loadAdminChannelsToGrid(category) {
 // Load only admin channels (replace current view)
 async function loadAdminCategoryOnly(category) {
  showChannelLoader();
+
+ // Try frontend first (if enabled and data is available)
+ if (FRONTEND_ENABLED && _frontendLoaded) {
+  var feChannels = await fetchFrontendChannelsByCategory(category);
+  if (feChannels.length > 0) {
+   var converted = feChannels.map(frontendChannelToInternal);
+   allChannels = converted;
+   renderCategories(allChannels);
+   renderGrid(allChannels);
+   return; // Frontend had the data, no Supabase request needed
+  }
+ }
+
+ // Fallback: fetch from Supabase
  const channels = await fetchAdminChannels(category);
  if (channels.length > 0) {
  adminChannels = channels.map(adminChannelToInternal);
