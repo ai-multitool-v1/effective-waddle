@@ -2918,23 +2918,6 @@ async function loadAdminChannelsToGrid(category) {
   }
  }
 }
- if (channels.length > 0) {
- adminChannels = channels.map(adminChannelToInternal);
- // Merge with existing allChannels (avoid duplicates by name)
- const existingNames = new Set(allChannels.map(c => c.name));
- const newChannels = adminChannels.filter(c => !existingNames.has(c.name));
- allChannels = [...allChannels, ...newChannels];
- renderCategories(allChannels);
- renderGrid(allChannels);
- autoPlayLastChannel();
- } else {
- // No admin channels found - show appropriate message only if grid is empty
- if (allChannels.length === 0) {
- grid.innerHTML = '<div class="channel-loader"><svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg"><circle cx="25" cy="25" r="20" fill="none" stroke="#ff0055" stroke-width="3" stroke-dasharray="31.4 31.4" stroke-linecap="round"/></svg><span>No channels found.</span></div>';
- document.getElementById("loadMoreBtn").style.display = "none";
- }
- }
-}
 
 // Load only channels for a category (replace current view)
 // Always merges: Frontend (GitHub M3U) channels + Supabase admin channels
