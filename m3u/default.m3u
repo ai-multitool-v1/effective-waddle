@@ -1,0 +1,5 @@
+#EXTM3U
+#EXTINF:-1 tvg-logo="https://i.imgur.com/btv_logo.png" group-title="Default",BTV
+https://cdn.btv.gov.bd/live/btv.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/ekattor_logo.png" group-title="Default",Ekattor TV
+https://cdn.ekattor.tv/live/ekattor.m3u8

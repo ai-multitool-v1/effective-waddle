@@ -1,0 +1,5 @@
+#EXTM3U
+#EXTINF:-1 tvg-logo="https://i.imgur.com/gaan_bangla_logo.png" group-title="Music",GAAN Bangla
+https://cdn.gaanbangla.tv/live/gaan.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/mtv_logo.png" group-title="Music",MTV
+https://cdn.mtv.com/live/mtv.m3u8

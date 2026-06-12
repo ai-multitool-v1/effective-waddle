@@ -1,0 +1,9 @@
+#EXTM3U
+#EXTINF:-1 tvg-logo="https://i.imgur.com/ntv_logo.png" group-title="Entertainment",NTV
+https://cdn.ntvbd.com/live/ntv.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/atn_bangla_logo.png" group-title="Entertainment",ATN Bangla
+https://cdn.atnbangla.tv/live/atn.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/channel_i_logo.png" group-title="Entertainment",Channel i
+https://cdn.channeli.tv/live/channeli.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/desh_tv_logo.png" group-title="Entertainment",Desh TV
+https://cdn.deshtv.com/live/deshtv.m3u8

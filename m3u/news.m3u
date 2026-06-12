@@ -1,0 +1,7 @@
+#EXTM3U
+#EXTINF:-1 tvg-logo="https://i.imgur.com/jamuna_tv_logo.png" group-title="News",Jamuna TV
+https://cdn.jamuna.tv/live/jamuna_tv.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/somoy_tv_logo.png" group-title="News",Somoy TV
+https://cdn.somoy.tv/live/somoy_tv.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/channel24_logo.png" group-title="News",Channel 24
+https://cdn.channel24.tv/live/channel24.m3u8

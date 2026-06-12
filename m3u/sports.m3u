@@ -1,0 +1,7 @@
+#EXTM3U
+#EXTINF:-1 tvg-logo="https://i.imgur.com/tsports_logo.png" group-title="Sports",T Sports
+https://cdn.tsports.com/live/tsports.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/gtv_sports_logo.png" group-title="Sports",GTV Sports
+https://cdn.gtv.com/live/sports.m3u8
+#EXTINF:-1 tvg-logo="https://i.imgur.com/espn_logo.png" group-title="Sports",ESPN
+https://cdn.espn.com/live/espn.m3u8
