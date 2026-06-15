@@ -1,4 +1,4 @@
-##EXTM3U
+#EXTM3U
 #EXTINF:-1 tvg-name="Caze TV"  tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",Caze TV
 https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/1080p-vtt/index.m3u8
 #EXTINF:-1 tvg-name="REAL MADRID TV"  tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",REAL MADRID TV
