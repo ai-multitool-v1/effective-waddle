@@ -1,4 +1,168 @@
 #EXTM3U
+#EXTINF:-1 tvg-name="FIFA World Cup 2026 (4K)" tvg-logo="https://i.postimg.cc/RFYx7cfR/20260612-205410.jpg" group-title="LIVE SPORTS",FIFA World Cup 2026 (4K)
+https://1nyaler.streamhostingcdn.top/stream/33/index.m3u8
+#EXTINF:-1 tvg-name="FIFA World Cup 2026 HD" tvg-logo="https://i.postimg.cc/Y903JSq8/20260612-095648.jpg" group-title="LIVE SPORTS",FIFA World Cup 2026 HD
+https://live.thebosstv.com:30443/dwlive/Somoy-TV/chunks.m3u8
+#EXTINF:-1 tvg-name="FIFA World Cup 2026 HD" tvg-logo="https://i.postimg.cc/Y903JSq8/20260612-095648.jpg" group-title="LIVE SPORTS",FIFA World Cup 2026 HD
+https://1nyaler.streamhostingcdn.top/stream/23/index.m3u8
+#EXTINF:-1 tvg-name="FIFA World Cup 2026 HD" tvg-logo="https://i.postimg.cc/KvpgH5gb/20260612-095057.jpg" group-title="LIVE SPORTS",FIFA World Cup 2026 HD
+https://1nyaler.streamhostingcdn.top/stream/32/index.m3u8
+#EXTINF:-1 tvg-name="FIFA World Cup 2026 🇦🇷" tvg-logo="https://i.postimg.cc/zfjBKhMd/20260612-205515.jpg" group-title="LIVE SPORTS",FIFA World Cup 2026 🇦🇷
+https://otte.live.fly.ww.aiv-cdn.net/gru-nitro/live/clients/dash/enc/ubehitlwzo/out/v1/8e09c381a51f4366a19e979418112e8f/cenc.mpd
+#EXTINF:-1 tvg-name="FIFA World Cup 2026 🇧🇷" tvg-logo="https://i.postimg.cc/NjnJP7D0/20260607-191116.jpg" group-title="LIVE SPORTS",FIFA World Cup 2026 🇧🇷
+https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/1080p-vtt/index.m3u8
+#EXTINF:-1 tvg-name="FIFA World Cup 2026" tvg-logo="https://i.postimg.cc/7ZRGLxFh/images-(1).jpg" group-title="LIVE SPORTS",FIFA World Cup 2026
+https://a62dad94.wurl.com/master/f36d25e7e52f1ba8d7e56eb859c636563214f541/UmFrdXRlblRWLWV1X0ZJRkFQbHVzRW5nbGlzaF9ITFM/playlist.m3u8
+#EXTINF:-1 tvg-name="REAL MADRID TV" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",REAL MADRID TV
+https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/bitrate_3.m3u8
+#EXTINF:-1 tvg-name="BEIN SPORT EXTRA Ñ 🇪🇸 (1080p)" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",BEIN SPORT EXTRA Ñ 🇪🇸 (1080p)
+https://bein-esp-xumo.amagi.tv/playlistR1080p.m3u8
+#EXTINF:-1 tvg-name="BEIN SPORT EXTRA Ñ 🇪🇸 (720p)" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",BEIN SPORT EXTRA Ñ 🇪🇸 (720p)
+https://bein-esp-xumo.amagi.tv/playlistR720P.m3u8
+#EXTINF:-1 tvg-name="IDMANTV 🇹🇷" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",IDMANTV 🇹🇷
+https://str2.yodacdn.net/idman_300_to_small/tracks-v1a1/mono.m3u8
+#EXTINF:-1 tvg-name="2TV Sport 🇳🇴" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",2TV Sport 🇳🇴
+https://tv.cdn.xsg.ge/gpb-2tv/index.m3u8
+#EXTINF:-1 tvg-name="Caze TV BR" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",Caze TV BR
+https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/Caze_TV.m3u8
+#EXTINF:-1 tvg-name="FANCODE (Link 1)" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",FANCODE (Link 1)
+https://abfjk4haaaaaaaampv6ofhkihi4r6.bia-cf.live.pv-cdn.net/iad-nitro/live/clients/dash/enc/fdb3pubmek/out/v1/aefca6420f944a9482e117f315de535f/cenc.mpd
+#EXTINF:-1 tvg-name="FANCODE (Link 2)" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",FANCODE (Link 2)
+https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/fdb3pubmek/out/v1/aefca6420f944a9482e117f315de535f/cenc.mpd
+#EXTINF:-1 tvg-name="FANCODE (Link 3)" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",FANCODE (Link 3)
+https://otte.live.fly.ww.aiv-cdn.net/sin-nitro/live/clients/dash-sd/enc/v8g0dlo4z8/out/v1/946019f85dc64ae99ff9ce64a9727a62/cenc-sd.mpd
+#EXTINF:-1 tvg-name="Willow SPORTS" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",Willow SPORTS
+https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/tll6uwepxa/out/v1/a7f67cbb33df46539312956427343886/cenc.mpd
+#EXTINF:-1 tvg-name="Unknown Channel" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",Unknown Channel
+https://otte.live.fly.ww.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/3b7qwiqzk3/out/v1/9f14895badca43e6a716db021dcd0c31/cenc.mpd
+#EXTINF:-1 tvg-name="DAZN FAST+" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",DAZN FAST+
+https://ac-003.live.p7s1video.net/63f8995e/t_003/dazn-fast-hd/cenc-default.mpd
+#EXTINF:-1 tvg-name="DAZN COMBAT" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",DAZN COMBAT
+https://dazn-combat-rakuten.amagi.tv/hls/amagi_hls_data_rakutenAA-dazn-combat-rakuten/CDN/master.m3u8
+#EXTINF:-1 tvg-name="বিটিভি" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",বিটিভি
+https://owrcovcrpy.gpcdn.net/bpk-tv/1709/output/index.m3u8
+#EXTINF:-1 tvg-name="RAJDHANI TV" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",RAJDHANI TV
+https://sm-monirul.top/toffee/play/rajdhani_tv.m3u8
+#EXTINF:-1 tvg-name="FOX NY" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",FOX NY
+https://cdn-uw2-prod.tsv2.amagi.tv/linear/amg00488-foxdigital-wnyw-lgus/playlist.m3u8
+#EXTINF:-1 tvg-name="FOX 11 Green Bay WI (WLUK)" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",FOX 11 Green Bay WI (WLUK)
+https://linear-702.frequency.stream/dist/stirr/702/hls/master/playlist.m3u8
+#EXTINF:-1 tvg-name="Telemundo" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",Telemundo
+https://nbculocallive.akamaized.net/hls/live/2037499/puertorico/stream1/master_720.m3u8
+#EXTINF:-1 tvg-name="Telemundo 2" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",Telemundo 2
+https://nbculocallive.akamaized.net/hls/live/2037499/puertorico/stream1/master.m3u8
+#EXTINF:-1 tvg-name="Bein Xtra (720)" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",Bein Xtra (720)
+https://d9ssxzmclhfo4.cloudfront.net/bein_sports720p.m3u8
+#EXTINF:-1 tvg-name="FOX Sports (720)" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",FOX Sports (720)
+https://d1jzu95oc8fgt3.cloudfront.net/FOX_Sports720p.m3u8
+#EXTINF:-1 tvg-name="Caze TV (720)" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",Caze TV (720)
+https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/720p-vtt/index.m3u8
+#EXTINF:-1 tvg-name="Fubo Sports 2" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",Fubo Sports 2
+https://otte.live.fly.ww.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/uiffe4jhf0/out/v1/3534efafca8c4815adbb4d2e9a1fe003/cenc.mpd
+#EXTINF:-1 tvg-name="Redbull TV" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",Redbull TV
+https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master_3360.m3u8
+#EXTINF:-1 tvg-name="real Madrid TV" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",real Madrid TV
+https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/master.m3u8
+#EXTINF:-1 tvg-name="Cricket Gold" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",Cricket Gold
+https://d1nj4u39ja4cn0.cloudfront.net/v1/master/9d062541f2ff39b5c0f48b743c6411d25f62fc25/FLS-MuxIP-CricketGold/418.m3u8
+#EXTINF:-1 tvg-name="FIGHT NETWORK" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",FIGHT NETWORK
+https://amg00966-amg00966c10-amgplt0201.playout.now3.amagi.tv/playlist/amg00966-amg00966c10-amgplt0201/playlist.m3u8
+#EXTINF:-1 tvg-name="FUEL TV" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",FUEL TV
+https://cdn-uw2-prod.tsv2.amagi.tv/linear/amg01074-fueltv-fueltvemeaen-sportstribal/playlist.m3u8
+#EXTINF:-1 tvg-name="GCTV" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",GCTV
+https://cdn-uw2-prod.tsv2.amagi.tv/linear/amg00585-sportstribaltv-gctv-sportstribal/playlist.m3u8
+#EXTINF:-1 tvg-name="Horse & Country" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",Horse & Country
+https://hncfree-sportstribal.amagi.tv/hls/amagi_hls_data_sportstri-hncfree-sportstribal/CDN/playlist.m3u8
+#EXTINF:-1 tvg-name="CAZE TV 2" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",CAZE TV 2
+https://otte.live.fly.ww.aiv-cdn.net/gru-nitro/live/clients/dash/enc/3ynrpdanq2/out/v1/81fd4c26584044d2b1a1cc5b32fa9af0/cenc.mpd
+#EXTINF:-1 tvg-name="CAZE TV 3" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",CAZE TV 3
+https://otte.live.fly.ww.aiv-cdn.net/gru-nitro/live/clients/dash/enc/epg9sw6owc/out/v1/e50aecefcb294fae85d6b343e0a6f1cc/cenc.mpd
+#EXTINF:-1 tvg-name="BEIN SPORTS 1 AU" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",BEIN SPORTS 1 AU
+https://otte.live.fly.ww.aiv-cdn.net/syd-nitro/live/clients/dash/enc/ghwcl6hv68/out/v1/83536910d8034e9b9895a20fbe1c1687/cenc.mpd
+#EXTINF:-1 tvg-name="BEIN SPORTS 2 AU" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",BEIN SPORTS 2 AU
+https://otte.live.fly.ww.aiv-cdn.net/syd-nitro/live/clients/dash/enc/8m8cd46i1t/out/v1/83985c68e4174e90a58a1f2c024be4c9/cenc.mpd
+#EXTINF:-1 tvg-name="BEIN SPORTS 3 AU" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",BEIN SPORTS 3 AU
+https://a83aivottlinear-a.akamaihd.net/OTTB/syd-nitro/live/clients/dash/enc/q4u5nwaogz/out/v1/18de6d3e65934f3a8de4358e69eab86c/cenc.mpd
+#EXTINF:-1 tvg-name="BEIN Sports 1 1080P" tvg-logo="https://ai-multitool.pages.dev/icons/android-chrome-192x192.png" group-title="Live TV",BEIN Sports 1 1080P
+https://andro.226503.xyz/checklist/androstreamlivebs1.m3u8
+#EXTINF:-1 tvg-name="FIFA Plus B 🏆" tvg-logo="https://i.ibb.co.com/vnbkF0r/fifa-world-cup-2026-logo-png-seeklogo-665644.png" group-title="Sports",FIFA Plus B 🏆
+https://37b4c228.wurl.com/manifest/f36d25e7e52f1ba8d7e56eb859c636563214f541/UmFrdXRlblRWLWZyX0ZJRkFQbHVzRnJlbmNoX0hMUw/6f5437c5-e015-4754-8476-c8c6d27d3a55/1.m3u8
+#EXTINF:-1 tvg-name="FIFA Plus 🇦🇷 Argentina" tvg-logo="https://i.ibb.co.com/vnbkF0r/fifa-world-cup-2026-logo-png-seeklogo-665644.png" group-title="Sports",FIFA Plus 🇦🇷 Argentina
+https://6c849fb3.wurl.com/master/f36d25e7e52f1ba8d7e56eb859c636563214f541/TEctbXhfRklGQVBsdXNTcGFuaXNoLTFfSExT/playlist.m3u8
+#EXTINF:-1 tvg-name="FIFA Plus 🇫🇷 France" tvg-logo="https://i.ibb.co.com/vnbkF0r/fifa-world-cup-2026-logo-png-seeklogo-665644.png" group-title="Sports",FIFA Plus 🇫🇷 France
+https://37b4c228.wurl.com/master/f36d25e7e52f1ba8d7e56eb859c636563214f541/UmFrdXRlblRWLWZyX0ZJRkFQbHVzRnJlbmNoX0hMUw/playlist.m3u8
+#EXTINF:-1 tvg-name="FIFA Plus 🇩🇪 Germany" tvg-logo="https://i.ibb.co.com/vnbkF0r/fifa-world-cup-2026-logo-png-seeklogo-665644.png" group-title="Sports",FIFA Plus 🇩🇪 Germany
+https://4397879b.wurl.com/master/f36d25e7e52f1ba8d7e56eb859c636563214f541/UmFrdXRlblRWLWRlX0ZJRkFQbHVzR2VybWFuX0hMUw/playlist.m3u8
+#EXTINF:-1 tvg-name="FIFA Plus 🇮🇪 Itali" tvg-logo="https://i.ibb.co.com/vnbkF0r/fifa-world-cup-2026-logo-png-seeklogo-665644.png" group-title="Sports",FIFA Plus 🇮🇪 Itali
+https://5d95f7d7.wurl.com/master/f36d25e7e52f1ba8d7e56eb859c636563214f541/UmFrdXRlblRWLWl0X0ZJRkFQbHVzSXRhbGlhbl9ITFM/playlist.m3u8
+#EXTINF:-1 tvg-name="FIFA Plus 🇧🇷 Brazil" tvg-logo="https://i.ibb.co.com/vnbkF0r/fifa-world-cup-2026-logo-png-seeklogo-665644.png" group-title="Sports",FIFA Plus 🇧🇷 Brazil
+https://e3be9ac5.wurl.com/master/f36d25e7e52f1ba8d7e56eb859c636563214f541/TEctYnJfRklGQVBsdXNQb3J0dWd1ZXNlX0hMUw/playlist.m3u8
+#EXTINF:-1 tvg-name="FIFA Plus 🇪🇸 Spain" tvg-logo="https://i.ibb.co.com/vnbkF0r/fifa-world-cup-2026-logo-png-seeklogo-665644.png" group-title="Sports",FIFA Plus 🇪🇸 Spain
+https://d63fabad.wurl.com/master/f36d25e7e52f1ba8d7e56eb859c636563214f541/UmFrdXRlblRWLWVzX0ZJRkFQbHVzU3BhbmlzaF9ITFM/playlist.m3u8
+#EXTINF:-1 tvg-name="FIFA Plus 🇺🇸 USA" tvg-logo="https://i.ibb.co.com/vnbkF0r/fifa-world-cup-2026-logo-png-seeklogo-665644.png" group-title="Sports",FIFA Plus 🇺🇸 USA
+https://d2w9q46ikgrcwx.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-of5cbk3sav3w5/v1/sysdata_s_p_a_fifa_7/samsungheadend_us/latest/main/hls/playlist.m3u8
+#EXTINF:-1 tvg-name="Tyc Sports 🇦🇷 Argentina" tvg-logo="https://imglink.cc/cdn/1oSRQnyUqK.jpg" group-title="Sports",Tyc Sports 🇦🇷 Argentina
+https://amg26268-amg26268c14-freelivesports-emea-10267.playouts.now.amagi.tv/ts-us-e2-n2/playlist/amg26268-sportsstudio-tycsports-freelivesportsemea/playlist.m3u8
+#EXTINF:-1 tvg-name="Caze TV C - 🇧🇷 Brazil" tvg-logo="https://i.ibb.co.com/vnbkF0r/fifa-world-cup-2026-logo-png-seeklogo-665644.png" group-title="Sports",Caze TV C - 🇧🇷 Brazil
+https://otte.live.fly.ww.aiv-cdn.net/gru-nitro/live/clients/dash/enc/3ynrpdanq2/out/v1/81fd4c26584044d2b1a1cc5b32fa9af0/cenc.mpd?amznDtid=AOAGZA014O5RE&encoding=segmentBase
+#EXTINF:-1 tvg-name="Caze TV D - 🇧🇷 Brazil" tvg-logo="https://i.ibb.co.com/vnbkF0r/fifa-world-cup-2026-logo-png-seeklogo-665644.png" group-title="Sports",Caze TV D - 🇧🇷 Brazil
+https://otte.live.fly.ww.aiv-cdn.net/gru-nitro/live/clients/dash/enc/epg9sw6owc/out/v1/e50aecefcb294fae85d6b343e0a6f1cc/cenc.mpd?amznDtid=AOAGZA014O5RE&encoding=segmentBase
+#EXTINF:-1 tvg-name="Somoy TV 🇧🇩 Bangladesh" tvg-logo="https://i.ibb.co.com/vnbkF0r/fifa-world-cup-2026-logo-png-seeklogo-665644.png" group-title="Sports",Somoy TV 🇧🇩 Bangladesh
+https://owrcovcrpy.gpcdn.net/bpk-tv/1702/output/index.m3u8
+#EXTINF:-1 tvg-name="Bein Sports 2" tvg-logo="https://imglink.cc/cdn/kIiut6WBq0.jpg" group-title="Sports",Bein Sports 2
+https://andro.226503.xyz/checklist/androstreamlivebs2.m3u8
+#EXTINF:-1 tvg-name="Bein Sports 3" tvg-logo="https://imglink.cc/cdn/kIiut6WBq0.jpg" group-title="Sports",Bein Sports 3
+https://andro.226503.xyz/checklist/androstreamlivebs3.m3u8
+#EXTINF:-1 tvg-name="Bein Sports 4" tvg-logo="https://imglink.cc/cdn/kIiut6WBq0.jpg" group-title="Sports",Bein Sports 4
+https://andro.226503.xyz/checklist/androstreamlivebs4.m3u8
+#EXTINF:-1 tvg-name="Euro TV" tvg-logo="https://imglink.cc/cdn/SZphbKsSMx.png" group-title="Sports",Euro TV
+https://stream.ottplus.bd/live/euro_sports_hd_abr/live/euro_sports_hd/chunks.m3u8
+#EXTINF:-1 tvg-name="Cricket Gold" tvg-logo="https://imglink.cc/cdn/HMfImxTUXS.jpg" group-title="Sports",Cricket Gold
+https://streams2.sofast.tv/ptnr-yupptv/title-cricketgold/v1/manifest/611d79b11b77e2f571934fd80ca1413453772ac7/b2048bb8-1686-4432-aa50-647245383e0c/bfc6a36e-c250-4afe-b6c9-2bc57855bb7d/4.m3u8
+#EXTINF:-1 tvg-name="Star Jalsha" tvg-logo="https://imglink.cc/cdn/3TXPVSGzx5.png" group-title="Entertainment",Star Jalsha
+https://yupptvcatchupire.yuppcdn.net/preview/starjalsha/1800.m3u8
+#EXTINF:-1 tvg-name="G Series Drama" tvg-logo="https://imglink.cc/cdn/1_dUKmt1Oe.png" group-title="Entertainment",G Series Drama
+https://vods2.aynaott.com/gseriesDrama/tracks-v1a1/mono.ts.m3u8
+#EXTINF:-1 tvg-name="SRK Tv" tvg-logo="https://imglink.cc/cdn/uZtiXpPz29.png" group-title="Entertainment",SRK Tv
+https://srknowapp.ncare.live/srktvhlswodrm/srktv.stream/playlist.m3u8
+#EXTINF:-1 tvg-name="Goldmines" tvg-logo="https://imglink.cc/cdn/E86bN6IAxl.jpg" group-title="Movies",Goldmines
+https://cdn-2.pishow.tv/live/1459/master.m3u8
+#EXTINF:-1 tvg-name="Goldmines Movies" tvg-logo="https://imglink.cc/cdn/E86bN6IAxl.jpg" group-title="Movies",Goldmines Movies
+https://cdn-2.pishow.tv/live/1461/master.m3u8
+#EXTINF:-1 tvg-name="Hindi Classic 24" tvg-logo="https://imglink.cc/cdn/cScI5tEUjV.png" group-title="Movies",Hindi Classic 24
+https://vods2.aynaott.com/hindimovies/index.m3u8
+#EXTINF:-1 tvg-name="South India Movie" tvg-logo="https://imglink.cc/cdn/cScI5tEUjV.png" group-title="Movies",South India Movie
+https://live20.bozztv.com/giatvplayout7/giatv-209593/tracks-v1a1/mono.ts.m3u8
+#EXTINF:-1 tvg-name="Action Hollywood" tvg-logo="https://imglink.cc/cdn/cScI5tEUjV.png" group-title="Movies",Action Hollywood
+https://cdn-apse1-prod.tsv2.amagi.tv/linear/amg01076-lightningintern-actionhollywood-samsungnz/playlist.m3u8
+#EXTINF:-1 tvg-name="9X Tashan" tvg-logo="https://imglink.cc/cdn/IYDn_LwwiV.png" group-title="Music",9X Tashan
+https://wiselp.wiseplayout.com/9X_Tashan/master.m3u8
+#EXTINF:-1 tvg-name="9X Jalwa" tvg-logo="https://imglink.cc/cdn/IYDn_LwwiV.png" group-title="Music",9X Jalwa
+https://wiselp.wiseplayout.com/9X_Jalwa/master.m3u8
+#EXTINF:-1 tvg-name="9X Jhakaas" tvg-logo="https://imglink.cc/cdn/IYDn_LwwiV.png" group-title="Music",9X Jhakaas
+https://wiselp.wiseplayout.com/9X_Jhakaas/master.m3u8
+#EXTINF:-1 tvg-name="Sangeet Bangla" tvg-logo="https://imglink.cc/cdn/LmVOSdl3ku.png" group-title="Music",Sangeet Bangla
+https://cdn-4.pishow.tv/live/1143/master.m3u8
+#EXTINF:-1 tvg-name="Bengali Beat" tvg-logo="https://imglink.cc/cdn/IYDn_LwwiV.png" group-title="Music",Bengali Beat
+https://tplay.live/originals/bengali-beats/index.m3u8
+#EXTINF:-1 tvg-name="Party Universe" tvg-logo="https://imglink.cc/cdn/IYDn_LwwiV.png" group-title="Music",Party Universe
+https://nomawnoijl.gpcdn.net/akash/partyuniverse/chunks.m3u8
+#EXTINF:-1 tvg-name="Party Universe B" tvg-logo="https://imglink.cc/cdn/IYDn_LwwiV.png" group-title="Music",Party Universe B
+https://nomawnoijl.gpcdn.net/akash/partyuniverse/playlist.m3u8
+#EXTINF:-1 tvg-name="Motu Patlu" tvg-logo="https://imglink.cc/cdn/TxPUulKGQh.jpg" group-title="Cartoon",Motu Patlu
+https://live20.bozztv.com/giatvplayout7/giatv-209622/tracks-v1a1/mono.ts.m3u8
+#EXTINF:-1 tvg-name="Tom & Jerry TV" tvg-logo="https://imglink.cc/cdn/YkXRQgC4-_.jpg" group-title="Cartoon",Tom & Jerry TV
+https://live20.bozztv.com/giatvplayout7/giatv-208314/tracks-v1a1/mono.ts.m3u8
+#EXTINF:-1 tvg-name="Bantul The Great" tvg-logo="https://imglink.cc/cdn/_OIh6UYTpa.jpg" group-title="Cartoon",Bantul The Great
+https://live20.bozztv.com/giatvplayout7/giatv-209869/tracks-v1a1/mono.ts.m3u8
+#EXTINF:-1 tvg-name="Doraemon TV" tvg-logo="https://imglink.cc/cdn/rmNeL8f6NR.png" group-title="Cartoon",Doraemon TV
+https://live20.bozztv.com/giatvplayout7/giatv-209902/tracks-v1a1/mono.ts.m3u8
+#EXTINF:-1 tvg-name="Oggy and the Cockroaches" tvg-logo="https://imglink.cc/cdn/cZxNWhHkaZ.jpg" group-title="Cartoon",Oggy and the Cockroaches
+https://live20.bozztv.com/giatvplayout7/giatv-210728/tracks-v1a1/mono.ts.m3u8
+#EXTINF:-1 tvg-name="Mr Bean Animated" tvg-logo="https://i.ibb.co.com/XfqV4B56/png-transparent-mr-bean-illustration-youtube-coloring-book-character-cartoon-mr-bean-television-chil.png" group-title="Cartoon",Mr Bean Animated
+https://amg00627-amg00627c29-rakuten-it-3989.playouts.now.amagi.tv/playlist/amg00627-banijayfast-mrbeanitcc-rakutenit/playlist.m3u8
+#EXTINF:-1 tvg-name="Gopal Bhar TV" tvg-logo="https://i.ibb.co.com/5xSF5mzh/Gopal-Bhar-animated-TV-series-title-card.jpg" group-title="Cartoon",Gopal Bhar TV
+https://live20.bozztv.com/giatvplayout7/giatv-209611/tracks-v1a1/mono.ts.m3u8
 #EXTINF:-1 tvg-name="Somoy TV" tvg-logo="https://s3.aynaott.com/storage/ece71c1163a377fbe2d93f9d28c34f60" group-title="Sports",Somoy TV
 https://live.thebosstv.com:30443/dwlive/Somoy-TV/chunks.m3u8
 #EXTINF:-1 tvg-name="DSPORTS" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQeYlfQg4HXMdswfyTrb6iKdSndj0xCsJKTD6MGfooCdnpvLiSVOPSctiI&s=10" group-title="Sports",DSPORTS
