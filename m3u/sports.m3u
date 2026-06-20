@@ -15,6 +15,30 @@ https://1nyaler.streamhostingcdn.top/stream/23/index.m3u8
 https://1nyaler.streamhostingcdn.top/stream/32/index.m3u8
 #EXTINF:-1 tvg-name="Somoy" tvg-logo="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png" group-title="FIFA",Somoy
 https://live.thebosstv.com:30443/dwlive/Somoy-TV/chunks.m3u8
+#EXTINF:-1 tvg-name="Gopal Bhar TV" group-title="Akash Bangla",Gopal Bhar TV
+https://live20.bozztv.com/giatvplayout7/giatv-209611/tracks-v1a1/mono.ts.m3u8
+#EXTINF:-1 tvg-name="BTV" group-title="Akash Bangla",BTV
+https://owrcovcrpy.gpcdn.net/bpk-tv/1709/output/index.m3u8
+#EXTINF:-1 tvg-name="Tom & Jerry TV" group-title="Akash Bangla",Tom & Jerry TV
+https://live20.bozztv.com/giatvplayout7/giatv-208314/tracks-v1a1/mono.ts.m3u8
+#EXTINF:-1 tvg-name="Doraemon TV" group-title="Akash Bangla",Doraemon TV
+https://live20.bozztv.com/giatvplayout7/giatv-209902/tracks-v1a1/mono.ts.m3u8
+#EXTINF:-1 tvg-name="Mr Bean Animated" group-title="Akash Bangla",Mr Bean Animated
+https://amg00627-amg00627c29-rakuten-it-3989.playouts.now.amagi.tv/playlist/amg00627-banijayfast-mrbeanitcc-rakutenit/playlist.m3u8
+#EXTINF:-1 tvg-name="Somoy TV B 🇧🇩" tvg-logo="https://imglink.cc/cdn/RY7jBwPKAr.jpg" group-title="Akash Sports",Somoy TV B 🇧🇩
+https://live.thebosstv.com:30443/dwlive/Somoy-TV/chunks.m3u8
+#EXTINF:-1 tvg-name="World Cup S2" tvg-logo="https://imglink.cc/cdn/RY7jBwPKAr.jpg" group-title="Akash Sports",World Cup S2
+https://andro.226503.xyz/checklist/androstreamlivebs1.m3u8
+#EXTINF:-1 tvg-name="FIFA Live - Bangla 🇮🇳" tvg-logo="https://imglink.cc/cdn/RY7jBwPKAr.jpg" group-title="Akash Sports",FIFA Live - Bangla 🇮🇳
+https://d1g8wgjurz8via.cloudfront.net/bpk-tv/ColorsHD/default/ColorsHD-video=2137600.m3u8
+#EXTINF:-1 tvg-name="FIFA Live - Bangla A 🇮🇳" tvg-logo="https://imglink.cc/cdn/RY7jBwPKAr.jpg" group-title="Akash Sports",FIFA Live - Bangla A 🇮🇳
+https://d1g8wgjurz8via.cloudfront.net/bpk-tv/ColorsHD/default/ColorsHD.m3u8
+#EXTINF:-1 tvg-name="Bein Sports" tvg-logo="https://imglink.cc/cdn/RY7jBwPKAr.jpg" group-title="Akash Sports",Bein Sports
+https://1nyaler.streamhostingcdn.top/stream/23/index.m3u8
+#EXTINF:-1 tvg-name="Caze Tv 🇧🇷 Brazil" tvg-logo="https://imglink.cc/cdn/RY7jBwPKAr.jpg" group-title="Akash Sports",Caze Tv 🇧🇷 Brazil
+https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/1080p-vtt/index.m3u8
+#EXTINF:-1 tvg-name="MAX  HD" group-title="Akash Sports",MAX  HD
+https://webott.viatv.com.np/v0t1/CineplexHD.stream/chunks.m3u8
 #EXTINF:-1 tvg-name="Z Bangla sonar Low" tvg-logo="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png" group-title="Z Bangla sonar",Z Bangla sonar Low
 https://d1g8wgjurz8via.cloudfront.net/bpk-tv/ColorsHD/default/Zeebanglahd.m3u8
 #EXTINF:-1 tvg-name="Bein Sports 1 720p" tvg-logo="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png" group-title="FIFA",Bein Sports 1 720p
