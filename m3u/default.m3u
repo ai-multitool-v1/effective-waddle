@@ -5,6 +5,13 @@ https://trs1.aynaott.com/tsports/index.m3u8
 https://nbculocallive.akamaized.net/hls/live/2037499/puertorico/stream1/master.m3u8
 #EXTINF:-1 tvg-name="FIFA World Cup 2026 (4K)" tvg-logo="https://i.postimg.cc/RFYx7cfR/20260612-205410.jpg" group-title="LIVE SPORTS",FIFA World Cup 2026 (4K)
 https://1nyaler.streamhostingcdn.top/stream/33/index.m3u8
+#EXTINF:-1 tvg-name="US CANAL 57" tvg-logo="https://buddytv.netlify.app/img/no-logo.png" group-title="Uncategorized",US CANAL 57
+https://167790.global.ssl.fastly.net/6189746bccf0424c112f5476/live_50bbca50292011ed8d265962bedee5f9/tracks-v2a1/mono.m3u8
+
+
+#EXTINF:-1 tvg-name="US CANAL 57" tvg-logo="https://buddytv.netlify.app/img/no-logo.png" group-title="Uncategorized",Tyc argentina
+https://amg26268-amg26268c14-freelivesports-emea-10267.playouts.now.amagi.tv/ts-us-e2-n2/playlist/amg26268-sportsstudio-tycsports-freelivesportsemea/playlist.m3u8
+
 #EXTINF:-1 tvg-name="FIFA World Cup 2026 (HD)" tvg-logo="https://i.postimg.cc/hjQwQXST/20260613-104845.jpg" group-title="LIVE SPORTS",FIFA World Cup 2026 (HD)
 https://qp-pldt-live-bpk-ucd-prod.akamaized.net/bpk-tv/ch299/default/index.mpd
 #EXTINF:-1 tvg-name="FIFA World Cup 2026 HD" tvg-logo="https://i.postimg.cc/Y903JSq8/20260612-095648.jpg" group-title="LIVE SPORTS",FIFA World Cup 2026 HD
