@@ -1,4 +1,6 @@
 #EXTM3U
+#EXTINF:-1 tvg-name="T Sports HD" tvg-logo="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png" group-title="FIFA",BisoCope +
+https://d1kep4defqj6r1.cloudfront.net/out/v1/4e21d5a122c549289dd6feab259266e8/index_1.m3u8
 #EXTINF:-1 tvg-name="T Sports HD" tvg-logo="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png" group-title="FIFA",T Sports HD
 https://tv.emnetbd.com/flussonic/Tsports1/tracks-v1a1/mono.m3u8
 #EXTINF:-1 tvg-name="Unite 8 Sports HD" tvg-logo="https://assets.football-logos.cc/logos/tournaments/1500x1500/fifa-world-cup-2026--white.10e0b37b.png" group-title="FIFA",T Sports HD
