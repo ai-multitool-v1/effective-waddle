@@ -1,5 +1,9 @@
 #EXTM3U
 #EXTINF:-1 tvg-name="BEIN ARABIC" group-title="Sports",BEIN ARABIC
+http://198.195.239.50:8095/Fifa-1/2026/07/03/08/20/41-06000.ts
+#EXTINF:-1 tvg-name="BEIN ARABIC" group-title="Sports",BEIN ARABIC
+http://198.195.239.50:8095/Fifa-1/video.m3u8
+#EXTINF:-1 tvg-name="BEIN ARABIC" group-title="Sports",BEIN ARABIC
 https://andro.evrenesoglu57.click/checklist/androstreamliveexn4.m3u8
 #EXTINF:-1 tvg-name="FiFA live" group-title="Sports",FiFA live
 https://andro.evrenesoglu57.click/checklist/androstreamliveexn3.m3u8
