@@ -1,4 +1,39 @@
 #EXTM3U
+#EXTM3U
+
+#EXTINF:-1,T Sports 1080p
+http://103.114.11.37:8081/T-Sports-BDIX-720p/video.m3u8?token=bJPpluZ30rPLH3
+
+#EXTINF:-1,Unite8 Sports 2 1080p
+http://103.114.11.37:8081/Unite8-sports-2/video.m3u8?token=bJPpluZ30rPLH3
+
+#EXTINF:-1,Caze Tv 1080p
+http://103.114.11.37:8081/CazeTv1080p/video.m3u8?token=bJPpluZ30rPLH3
+
+#EXTINF:-1,Caze Tv 720p
+http://103.114.11.37:8081/caze-tv-720p/video.m3u8?token=bJPpluZ30rPLH3
+
+#EXTINF:-1,BTV
+http://103.114.11.37:8081/BTV/video.m3u8?token=bJPpluZ30rPLH3
+
+#EXTINF:-1,Somoy TV
+http://103.114.11.37:8081/SOMOY-TV/video.m3u8?token=bJPpluZ30rPLH3
+
+#EXTINF:-1,PTV
+http://103.114.11.37:8081/PTV-BDIX-720p/video.m3u8?token=bJPpluZ30rPLH3
+
+#EXTINF:-1,4K 1
+http://103.114.11.37:8081/FIFAPLUS/index.m3u8?token=bJPpluZ30rPLH3
+
+#EXTINF:-1,4K 2
+http://103.114.11.37:8081/FIFA4k-2/index.m3u8?token=bJPpluZ30rPLH3
+
+#EXTINF:-1,4K 3
+http://103.114.11.37:8081/FIFA4k-2/index.m3u8?token=bJPpluZ30rPLH3
+
+
+
+
 #EXTINF:-1  tvg-logo="https://imgur.com/79g2kMA.png",SKY LIFE BD(AL QURAN)24 HOUR
 http://fastshare1.com:8080//live/25711345/late8airline/319505.ts
 #EXTINF:-1  tvg-logo="https://imgur.com/79g2kMA.png",Football World Cup 2026
