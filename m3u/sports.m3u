@@ -1,7 +1,9 @@
 #EXTM3U
-#EXTINF:-1 tvg-name="BEIN ARABIC" group-title="Sports",BEIN ARABIC
+#EXTINF:-1 tvg-name="BEIN ARABIC" group-title="Sports",Test
+https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/w0rehjjrwe/out/v1/69a2a7041395406b970598f61680e7cf/cenc.mpd
+#EXTINF:-1 tvg-name="BEIN ARABIC" group-title="Sports",Test2
 https://prod-cdn01-live.toffeelive.com/live/FIFA-2026-3/sst/0/master_150020260703051446400.ts
-#EXTINF:-1 tvg-name="BEIN ARABIC" group-title="Sports",BEIN ARABIC
+#EXTINF:-1 tvg-name="BEIN ARABIC" group-title="Sports",Test3
 https://qp-pldt-live-bpk-ucd-prod.akamaized.net/bpk-tv/fifa_ppv1/default/index.mpd
 #EXTINF:-1 tvg-name="BEIN ARABIC" group-title="Sports",BEIN ARABIC
 https://andro.evrenesoglu57.click/checklist/androstreamliveexn4.m3u8
