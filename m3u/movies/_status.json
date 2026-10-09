@@ -1,14 +1,27 @@
 {
-  "checked_at_bd": "2026-10-09 21:55",
+  "checked_at_bd": "2026-10-09 23:24",
   "source": "https://raw.githubusercontent.com/srhady/join_telegram_chennal-livesportsplay/refs/heads/main/latest_movies.m3u",
   "source_last_updated": "2026-10-09 06:10:14 PM (BD Time)",
+  "original_hosts": [
+    "ydfgbn.b-cdn.net"
+  ],
+  "target_zone": "afgtbh.b-cdn.net",
+  "host_swap_applied": true,
   "parsed": 30040,
   "unique": 21300,
   "dupes_removed": 8740,
-  "dead_hosts": {
-    "https://ydfgbn.b-cdn.net": 21300
-  },
-  "live_total": 0,
-  "dead_total": 21300,
-  "per_country": {}
+  "live_total": 694,
+  "dead_total": 20606,
+  "dead_links_removed": true,
+  "per_country": {
+    "english": 59,
+    "korean": 8,
+    "bengali": 90,
+    "hindi": 141,
+    "dual-audio": 190,
+    "south-indian": 2,
+    "chinese": 1,
+    "spanish": 1,
+    "others": 202
+  }
 }

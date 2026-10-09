@@ -1,9 +1,10 @@
 {
   "name": "AI Movie Hub Playlists",
-  "generated": "2026-10-09",
+  "generated": "2026-10-09 23:24",
+  "dead_links_removed": true,
   "source": "https://raw.githubusercontent.com/srhady/join_telegram_chennal-livesportsplay/refs/heads/main/latest_movies.m3u",
-  "source_updated": "2026-10-09 09:17:18 AM (BD Time)",
-  "total": 21289,
+  "source_updated": "2026-10-09 06:10:14 PM (BD Time)",
+  "total": 694,
   "base": "https://raw.githubusercontent.com/ai-multitool-v1/effective-waddle/main/m3u/movies/",
   "default": "english",
   "fallback_default": "korean",
@@ -12,85 +13,64 @@
       "id": "english",
       "name": "English",
       "file": "english.m3u",
-      "count": 833,
-      "size_kb": 289
+      "count": 59,
+      "size_kb": 22
     },
     {
       "id": "korean",
       "name": "Korean",
       "file": "korean.m3u",
-      "count": 255,
-      "size_kb": 93
+      "count": 8,
+      "size_kb": 3
     },
     {
       "id": "bengali",
       "name": "Bengali",
       "file": "bengali.m3u",
-      "count": 3009,
-      "size_kb": 1064
+      "count": 90,
+      "size_kb": 32
     },
     {
       "id": "hindi",
       "name": "Hindi",
       "file": "hindi.m3u",
-      "count": 4315,
-      "size_kb": 1521
+      "count": 141,
+      "size_kb": 49
     },
     {
       "id": "dual-audio",
       "name": "Dual Audio",
       "file": "dual-audio.m3u",
-      "count": 5264,
-      "size_kb": 1825
+      "count": 190,
+      "size_kb": 65
     },
     {
       "id": "south-indian",
       "name": "South Indian",
       "file": "south-indian.m3u",
-      "count": 626,
-      "size_kb": 226
+      "count": 2,
+      "size_kb": 1
     },
     {
       "id": "chinese",
       "name": "Chinese",
       "file": "chinese.m3u",
-      "count": 119,
-      "size_kb": 45
-    },
-    {
-      "id": "japanese",
-      "name": "Japanese",
-      "file": "japanese.m3u",
-      "count": 23,
-      "size_kb": 9
-    },
-    {
-      "id": "turkish",
-      "name": "Turkish",
-      "file": "turkish.m3u",
-      "count": 6,
-      "size_kb": 2
+      "count": 1,
+      "size_kb": 1
     },
     {
       "id": "spanish",
       "name": "Spanish",
       "file": "spanish.m3u",
-      "count": 13,
-      "size_kb": 5
-    },
-    {
-      "id": "asian",
-      "name": "Asian",
-      "file": "asian.m3u",
-      "count": 74,
-      "size_kb": 26
+      "count": 1,
+      "size_kb": 1
     },
     {
       "id": "others",
       "name": "Others",
       "file": "others.m3u",
-      "count": 6752,
-      "size_kb": 2246
+      "count": 202,
+      "size_kb": 67
     }
   ]
 }
