@@ -1,0 +1,96 @@
+{
+  "name": "AI Movie Hub Playlists",
+  "generated": "2026-10-09",
+  "source": "https://raw.githubusercontent.com/srhady/join_telegram_chennal-livesportsplay/refs/heads/main/latest_movies.m3u",
+  "source_updated": "2026-10-09 09:17:18 AM (BD Time)",
+  "total": 21289,
+  "base": "https://raw.githubusercontent.com/ai-multitool-v1/effective-waddle/main/m3u/movies/",
+  "default": "english",
+  "fallback_default": "korean",
+  "countries": [
+    {
+      "id": "english",
+      "name": "English",
+      "file": "english.m3u",
+      "count": 833,
+      "size_kb": 289
+    },
+    {
+      "id": "korean",
+      "name": "Korean",
+      "file": "korean.m3u",
+      "count": 255,
+      "size_kb": 93
+    },
+    {
+      "id": "bengali",
+      "name": "Bengali",
+      "file": "bengali.m3u",
+      "count": 3009,
+      "size_kb": 1064
+    },
+    {
+      "id": "hindi",
+      "name": "Hindi",
+      "file": "hindi.m3u",
+      "count": 4315,
+      "size_kb": 1521
+    },
+    {
+      "id": "dual-audio",
+      "name": "Dual Audio",
+      "file": "dual-audio.m3u",
+      "count": 5264,
+      "size_kb": 1825
+    },
+    {
+      "id": "south-indian",
+      "name": "South Indian",
+      "file": "south-indian.m3u",
+      "count": 626,
+      "size_kb": 226
+    },
+    {
+      "id": "chinese",
+      "name": "Chinese",
+      "file": "chinese.m3u",
+      "count": 119,
+      "size_kb": 45
+    },
+    {
+      "id": "japanese",
+      "name": "Japanese",
+      "file": "japanese.m3u",
+      "count": 23,
+      "size_kb": 9
+    },
+    {
+      "id": "turkish",
+      "name": "Turkish",
+      "file": "turkish.m3u",
+      "count": 6,
+      "size_kb": 2
+    },
+    {
+      "id": "spanish",
+      "name": "Spanish",
+      "file": "spanish.m3u",
+      "count": 13,
+      "size_kb": 5
+    },
+    {
+      "id": "asian",
+      "name": "Asian",
+      "file": "asian.m3u",
+      "count": 74,
+      "size_kb": 26
+    },
+    {
+      "id": "others",
+      "name": "Others",
+      "file": "others.m3u",
+      "count": 6752,
+      "size_kb": 2246
+    }
+  ]
+}
