@@ -1,0 +1,14 @@
+{
+  "checked_at_bd": "2026-10-09 21:55",
+  "source": "https://raw.githubusercontent.com/srhady/join_telegram_chennal-livesportsplay/refs/heads/main/latest_movies.m3u",
+  "source_last_updated": "2026-10-09 06:10:14 PM (BD Time)",
+  "parsed": 30040,
+  "unique": 21300,
+  "dupes_removed": 8740,
+  "dead_hosts": {
+    "https://ydfgbn.b-cdn.net": 21300
+  },
+  "live_total": 0,
+  "dead_total": 21300,
+  "per_country": {}
+}
